@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Body, status
 from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
-
-from app.server.users_database import (add_user, delete_user, retrieve_users, retrieve_user, update_user,
-                                       change_password)
-from app.server.models.users import (User, UserInDB, UpdateUserModel, ChangePasswordModel)
-from app.server.models.responses import (ResponseModel, ErrorResponseModel)
+from server.database.users_database import (add_user, delete_user, retrieve_users, retrieve_user, update_user, change_password)
+from server.models.users import (User, UpdateUserModel, ChangePasswordModel)
+from server.models.responses import (ResponseModel, ErrorResponseModel)
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
@@ -22,6 +20,7 @@ async def add_user_data(user: User = Body(...)):
         return ResponseModel.return_response(new_user, 'User added successfully')
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
                                               f'The username {user["username"]} is not available!')
+
 
 @router.get('/', response_description='Users retrieved')
 async def get_users():
@@ -59,7 +58,7 @@ async def delete_user_data(username: str):
     return ErrorResponseModel.return_response(
             'An error occurred',
             status.HTTP_404_NOT_FOUND,
-            f'User with ID: {id} doesn\'t exist')
+            f'User with ID: {username} doesn\'t exist')
 
 
 @router.put('/{username}/change_password')
@@ -71,4 +70,4 @@ async def change_user_password(username: str, password: ChangePasswordModel = Bo
     if updated_user:
         return ResponseModel.return_response(f'Password changed for user with username {username}',
                                              'Password changed successfully')
-    return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND, 'Student doesn\'t exist')
+    return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND, 'User doesn\'t exist')

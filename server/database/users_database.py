@@ -1,10 +1,10 @@
 import motor.motor_asyncio
 from decouple import config
 
-MONGO_USER_DETAILS = config('MONGO_USER_DETAILS')
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_USER_DETAILS)
+MONGO_DETAILS = config('MONGO_DETAILS')
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
-database = client.users
+database = client.inPOINT
 
 user_collection = database.get_collection('users_collection')
 
@@ -13,7 +13,7 @@ def user_helper(user) -> dict:
     return {
         'id': str(user['_id']),
         'username': user['username'],
-        'hashed_password':user['hashed_password'],
+        'hashed_password': user['hashed_password'],
         'email': user['email'],
         'full_name': user['full_name'],
         'disabled': user['disabled']
