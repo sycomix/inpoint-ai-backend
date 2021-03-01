@@ -5,33 +5,30 @@
 System Dependencies:
 - docker
 - docker-compose
-- Python 3
-- virtualenv
 
-Clone the repository and type the following commands:
+### Steps
+* Install docker (https://docs.docker.com/get-docker/)
+* Install docker-compose (https://docs.docker.com/compose/install/)
+* Clone the repository
+* Copy .env.sample to .env (`cp .env.sample .env`)
+* Edit the .env file, if needed
+* Start docker
 
-```bash
-virtualenv env -p python3
-source env/bin/activate
-cd inpoint-back-end/
-pip install -r requirements.txt
-```
-
-## Run the application for development
-
-1. Start MongoDB database:
+## Running the application for development using Docker
 ```bash
 docker-compose up
 ```
-2. Start API
-```bash
-./run.sh
-```
+Check that the back-end application is available at http://localhost:8000
 
-## Dockerize the application
-TODO
+If this is not the case, good luck :-)!
+
+Check the API of the application at http://localhost:8000/docs
+
+## Interacting with MongoDB using MongoDB Compass
+Download the MongoDB Compass client to query, create or alter your database.
+
+MongoDB Compass link: https://www.mongodb.com/products/compass
 
 ## Important
-
 - Before committing your code changes do not forget to run the `format_code.sh` script
 - Please try to follow naming conventions and best practices
