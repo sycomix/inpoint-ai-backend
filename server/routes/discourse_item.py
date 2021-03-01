@@ -12,20 +12,12 @@ retrieve_discourse_item
 )
 
 
-def discourse_item_helper(discourse_item: DiscourseItem = Body(...)) -> dict:
-    discourse_item_data = jsonable_encoder(discourse_item)
-    discourse_item_data['userId'] = ObjectId(discourse_item_data['userId'])
-    if discourse_item_data['parentId'] is not None:
-        discourse_item_data['parentId'] = ObjectId(discourse_item_data['parentId'])
-    return discourse_item_data
-
-
 router = APIRouter()
 
 
 @router.post('/', response_description='Discourse item added into the database')
 async def add_discourse_item_data(discourse_item: DiscourseItem = Body(...)):
-    discourse_item_data = discourse_item_helper(discourse_item)
+    discourse_item_data = jsonable_encoder(discourse_item)
     new_discourse_item = await add_discourse_item(discourse_item_data)
     if new_discourse_item:
         return ResponseModel.return_response(new_discourse_item, 'Discourse item added successfully')
@@ -50,16 +42,16 @@ async def get_discourse_item(id: str):
                                               'Discourse item doesn\'t exist')
 
 
-@router.put('/{id}')
+@router.put('/{id}', response_description='Discourse item updated')
 async def update_discourse_item_data(id: str, data: UpdateDiscourseItem = Body(...)):
     data = {key: value for key, value in data.dict().items() if value is not None}
     updated_discourse_item = await update_discourse_item(id, data)
     if updated_discourse_item:
-        return ResponseModel.return_response({'updated discourse item':updated_discourse_item,
+        return ResponseModel.return_response({'Updated discourse item':updated_discourse_item,
                                               'message':f'Update of discourse item with id: {id} is successful'},
-                                             'User data updated successfully')
+                                             'Discourse item data updated successfully')
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
-                                             'There was an error updating the user data')
+                                              'There was an error updating the discourse item data')
 
 
 @router.delete('/{id}', response_description='Discourse item deleted')

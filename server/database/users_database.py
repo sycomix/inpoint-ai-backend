@@ -6,7 +6,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
 database = client.inPOINT
 
-user_collection = database.get_collection('users_collection')
+user_collection = database.get_collection('users')
 
 
 def user_helper(user) -> dict:
