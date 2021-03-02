@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, status
 from fastapi.encoders import jsonable_encoder
-from server.models.discourses import (Discourse, UpdateDiscourse, Purpose)
+from server.models.discourses import (Discourse, UpdateDiscourse)
 from server.models.responses import ResponseModel, ErrorResponseModel
 from server.database.discourses_database import (add_discourse, delete_discourse, retrieve_discourse,
                                                  retrieve_discourses, update_discourse)
@@ -9,11 +9,11 @@ router = APIRouter()
 
 
 @router.post('/', response_description='Discourse added into the database')
-async def add_discourse_data(discourse_item: Discourse = Body(...)):
-    discourse_data = jsonable_encoder(discourse_item)
+async def add_discourse_data(discourseItem: Discourse = Body(...)):
+    discourse_data = jsonable_encoder(discourseItem)
     new_discourse = await add_discourse(discourse_data)
     if new_discourse:
-        return ResponseModel.return_response(new_discourse, 'Discourse added successfully')
+        return ResponseModel.return_response(new_discourse)
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
                                               f'The discourse couldn\'t be added')
 
@@ -22,15 +22,15 @@ async def add_discourse_data(discourse_item: Discourse = Body(...)):
 async def get_discourses():
     discourses = await retrieve_discourses()
     if discourses:
-        return ResponseModel.return_response(discourses, 'Discourses retrieved successfully')
-    return ResponseModel.return_response(discourses, 'Empty list')
+        return ResponseModel.return_response(discourses)
+    return ResponseModel.return_response({'message': 'Empty List'})
 
 
 @router.get('/{id}', response_description='Discourse retrieved')
 async def get_discourse(id: str):
     discourse = await retrieve_discourse(id)
     if discourse:
-        return ResponseModel.return_response(discourse, 'Discourse retrieved successfully')
+        return ResponseModel.return_response(discourse)
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
                                               'Discourse doesn\'t exist')
 
@@ -39,8 +39,7 @@ async def get_discourse(id: str):
 async def delete_discourse_data(id: str):
     deleted_discourse = await delete_discourse(id)
     if deleted_discourse:
-        return ResponseModel.return_response(f'Discourse with id: {id} removed',
-                                             'Discourse deleted successfully')
+        return ResponseModel.return_response({'message': f'Discourse with id: {id} removed'})
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
                                               'Discourse doesn\'t exist')
 
@@ -51,10 +50,8 @@ async def update_discourse_data(id: str, data: UpdateDiscourse = Body(...)):
     updated_discourse = await update_discourse(id, discourse_data)
     if updated_discourse:
         if type(updated_discourse)!=bool:
-            return ResponseModel.return_response({'Updated discourse': updated_discourse,
-                                                  'message': f'Update of discourse with id: {id} is successful'},
-                                                 'Discourse data updated successfully')
+            return ResponseModel.return_response(updated_discourse)
         else:
-            return ResponseModel.return_response('The whole discourse was deleted', 'Discourse deleted successfully')
+            return ResponseModel.return_response({'message': 'The whole discourse was deleted'})
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
                                               'There was an error updating the discourse data')
