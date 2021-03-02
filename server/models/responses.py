@@ -5,12 +5,8 @@ from pydantic import Field
 class ResponseModel:
 
     @staticmethod
-    def return_response(data, message: str = Field(...)):
-        return {
-            'data': data,
-            'code': status.HTTP_200_OK,
-            'message': message
-        }
+    def return_response(data: dict = Field(...)):
+        return data
 
 
 class ErrorResponseModel:

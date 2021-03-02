@@ -16,33 +16,33 @@ discourses_collection = database.get_collection('discourses')
 
 
 async def discourse_from_database(discourse) -> dict:
-    discourse_items_ids = list(discourse['discourse_items'])
+    discourse_items_ids = list(discourse['discourseItems'])
     discourse_items_data = []
     for discourse_item_id in discourse_items_ids:
         discourse_item_data = await retrieve_discourse_item(str(discourse_item_id))
         discourse_items_data.append(discourse_item_data)
     return {
         'id': str(discourse['_id']),
-        'discourse_items': discourse_items_data
+        'discourseItems': discourse_items_data
     }
 
 
 async def discourse_add_discourse_items(discourse_data: dict):
-    discourse_items_data = discourse_data['discourse_items']
+    discourse_items_data = discourse_data['discourseItems']
     discourse_items_ids = []
     for discourse_item_data in discourse_items_data:
         discourse_item = await add_discourse_item(discourse_item_data)
-        discourse_items_ids.append(ObjectId(discourse_item['id']))
-    discourse_data['discourse_items'] = discourse_items_ids
+        discourse_items_ids.append(ObjectId(discourse_item['data']['id']))
+    discourse_data['discourseItems'] = discourse_items_ids
     return discourse_data
 
 
 async def update_discourse_add_discourse_item(discourse, discourse_data: dict):
-    discourse_item = await add_discourse_item(discourse_data['discourse_item'])
-    discourse_items_ids = list(discourse['discourse_items'])
-    discourse_items_ids.append(ObjectId(discourse_item['id']))
+    discourse_item = await add_discourse_item(discourse_data['discourseItem'])
+    discourse_items_ids = list(discourse['discourseItems'])
+    discourse_items_ids.append(ObjectId(discourse_item['data']['id']))
     updated_discourse = await discourses_collection.update_one({'_id': discourse['_id']},
-                                                              {'$set': {'discourse_items':discourse_items_ids}})
+                                                               {'$set': {'discourseItems': discourse_items_ids}})
     if updated_discourse:
         new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
         if new_discourse:
@@ -52,7 +52,7 @@ async def update_discourse_add_discourse_item(discourse, discourse_data: dict):
 
 
 async def update_discourse_delete_discourse_item(discourse, discourse_data: dict):
-    discourse_items_ids = list(discourse['discourse_items'])
+    discourse_items_ids = list(discourse['discourseItems'])
     if ObjectId(discourse_data['id']) not in discourse_items_ids:
         return False
     if await delete_discourse_item(discourse_data['id']):
@@ -61,7 +61,7 @@ async def update_discourse_delete_discourse_item(discourse, discourse_data: dict
             await discourses_collection.delete_one({'_id': discourse['_id']})
             return True
         updated_discourse = await discourses_collection.update_one({'_id': discourse['_id']},
-                                                                   {'$set': {'discourse_items': discourse_items_ids}})
+                                                                   {'$set': {'discourseItems': discourse_items_ids}})
         if updated_discourse:
             new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
             if new_discourse:
@@ -71,7 +71,7 @@ async def update_discourse_delete_discourse_item(discourse, discourse_data: dict
 
 
 async def discourse_delete_discourse_items(discourse):
-    discourse_items_ids = list(discourse['discourse_items'])
+    discourse_items_ids = list(discourse['discourseItems'])
     for discourse_item_id in discourse_items_ids:
         if not await delete_discourse_item(discourse_item_id):
             return False
@@ -119,11 +119,11 @@ async def update_discourse(id: str, discourse_data:dict):
 async def delete_discourse(id: str):
     discourse = await discourses_collection.find_one({'_id': ObjectId(id)})
     if discourse:
-        discourse_items_ids = list(discourse['discourse_items'])
-        if not discourse_items_ids:
+        discourse_items_ids = list(discourse['discourseItems'])
+        if discourse_items_ids:
             if await discourse_delete_discourse_items(discourse):
-                return await discourses_collection.delete_one({'_id': ObjectId(id)})
+                return await discourses_collection.delete_one({'_id':ObjectId(id)})
             return False
         else:
-            return await discourse_delete_discourse_items(discourse)
+            return await discourses_collection.delete_one({'_id':ObjectId(id)})
     return False

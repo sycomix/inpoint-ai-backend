@@ -15,21 +15,37 @@ discourse_items_collection = database.get_collection('discourseItems')
 
 def discourse_item_from_database(discourse_item) -> dict:
     return {
-        'id': str(discourse_item['_id']),
-        'userId': str(discourse_item['userId']),
-        'text': discourse_item['text'],
-        'createdAt': discourse_item['_id'].generation_time.strftime('%Y-%m-%d %H:%M:%S'),
-        'parentId': str(discourse_item['parentId']) if discourse_item['parentId'] else None
+        'group': 'nodes',
+        'data': {
+            'id': str(discourse_item['_id']),
+            'parentId': str(discourse_item['parentId']),
+            'label': discourse_item['label'],
+            'type': discourse_item['type'],
+            'text': discourse_item['text'],
+            'authorId': str(discourse_item['authorId']),
+            'likes': discourse_item['likes'],
+            'dislikes': discourse_item['dislikes'],
+            'createdAt': discourse_item['_id'].generation_time.strftime('%Y-%m-%d %H:%M:%S')
+
+        }
     } if discourse_item['parentId'] else {
-        'id':str(discourse_item['_id']),
-        'userId':str(discourse_item['userId']),
-        'text':discourse_item['text'],
-        'createdAt':discourse_item['_id'].generation_time.strftime('%Y-%m-%d %H:%M:%S')
+        'group': 'nodes',
+        'data': {
+            'id': str(discourse_item['_id']),
+            'label': discourse_item['label'],
+            'type': discourse_item['type'],
+            'text': discourse_item['text'],
+            'authorId': str(discourse_item['authorId']),
+            'likes': discourse_item['likes'],
+            'dislikes': discourse_item['dislikes'],
+            'createdAt': discourse_item['_id'].generation_time.strftime('%Y-%m-%d %H:%M:%S')
+
+        }
     }
 
 
 def discourse_item_for_database(discourse_item_data: dict) -> dict:
-    discourse_item_data['userId'] = ObjectId(discourse_item_data['userId'])
+    discourse_item_data['authorId'] = ObjectId(discourse_item_data['authorId'])
     if discourse_item_data['parentId'] is not None:
         discourse_item_data['parentId'] = ObjectId(discourse_item_data['parentId'])
     return discourse_item_data
