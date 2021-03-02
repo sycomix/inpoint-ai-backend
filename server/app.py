@@ -12,3 +12,9 @@ app.include_router(DiscourseRouter, tags=['Discourses'], prefix='/discourses')
 @app.get('/', tags=['Root'])
 async def read_root():
     return {'message': 'Welcome to this fantastic app!'}
+
+@app.get('/seed', tags=['Seed'])
+async def seed_database():
+    from server.database.seed import seed
+    await seed.seed_database('server/database/seed/data.json')
+    return {'ok': 'ok'}
