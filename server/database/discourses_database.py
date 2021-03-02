@@ -4,7 +4,10 @@ from bson.objectid import ObjectId
 
 from server.database.discourse_items_database import delete_discourse_item, add_discourse_item, retrieve_discourse_item
 
-MONGO_DETAILS = config('MONGO_DETAILS')
+MONGO_INITDB_ROOT_USERNAME = config('MONGO_INITDB_ROOT_USERNAME')
+MONGO_INITDB_ROOT_PASSWORD = config('MONGO_INITDB_ROOT_PASSWORD')
+MONGO_CONTAINER_NAME = config('MONGO_CONTAINER_NAME')
+MONGO_DETAILS = f'mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@{MONGO_CONTAINER_NAME}:27017'
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
 database = client.inPOINT

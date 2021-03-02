@@ -6,9 +6,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-    container_name: inpoint_mongodb
+    container_name: ${MONGO_CONTAINER_NAME}
     ports:
-      - ${MONGO_PORT}:27017
+      - ${MONGO_LOCALHOST_PORT}:27017
   backend:
     build: .
     command: python main.py
@@ -18,4 +18,4 @@ services:
     - ${MAIN_BACKEND_SERVER_PORT}:8000
     depends_on:
       - db
-    container_name: inpoint_main_backend
+    container_name: ${MAIN_BACKEND_CONTAINER_NAME}

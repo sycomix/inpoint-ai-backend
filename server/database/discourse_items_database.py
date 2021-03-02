@@ -2,7 +2,10 @@ import motor.motor_asyncio
 from decouple import config
 from bson.objectid import ObjectId
 
-MONGO_DETAILS = config('MONGO_DETAILS')
+MONGO_INITDB_ROOT_USERNAME = config('MONGO_INITDB_ROOT_USERNAME')
+MONGO_INITDB_ROOT_PASSWORD = config('MONGO_INITDB_ROOT_PASSWORD')
+MONGO_CONTAINER_NAME = config('MONGO_CONTAINER_NAME')
+MONGO_DETAILS = f'mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@{MONGO_CONTAINER_NAME}:27017'
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 
 database = client.inPOINT
