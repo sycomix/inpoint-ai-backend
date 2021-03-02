@@ -85,6 +85,9 @@ async def retrieve_discourses():
         discourses.append(discourse_data)
     return discourses
 
+async def retrieve_discourse_ids():
+    discourse_ids = [str(discourse['_id']) async for discourse in discourses_collection.find()]
+    return discourse_ids
 
 async def retrieve_discourse(id: str):
     discourse = await discourses_collection.find_one({'_id': ObjectId(id)})
