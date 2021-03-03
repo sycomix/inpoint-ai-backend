@@ -6,8 +6,8 @@ from server.routes.discourse import router as DiscourseRouter
 app = FastAPI()
 
 #app.include_router(UserRouter, tags=['Users'], prefix='/users')
-app.include_router(DiscourseItemRouter, tags=['Discourse Items'], prefix='/discourse_items')
-app.include_router(DiscourseRouter, tags=['Discourses'], prefix='/discourses')
+app.include_router(DiscourseItemRouter, tags=['Discourse Items'], prefix='/api/discourse_items')
+app.include_router(DiscourseRouter, tags=['Discourses'], prefix='/api/discourses')
 
 @app.get('/', tags=['Root'])
 async def read_root():
