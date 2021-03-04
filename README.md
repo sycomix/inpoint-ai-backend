@@ -22,10 +22,10 @@ Check that the back-end application is available at http://localhost:8000
 
 If this is not the case, good luck :-)!
 
-Check the documentation of the API of the application at http://localhost:8000/docs
+Check the documentation of the API of the application at http://localhost:8000/api/docs
 
 Check the database connection by utilizing an endpoint.
-For example, the http://localhost:8000/discourses/ endpoint should return a JSON
+For example, the http://localhost:8000/api/discourses/ endpoint should return a JSON
 object and not an internal server error
 
 ## Interacting with MongoDB using MongoDB Compass
