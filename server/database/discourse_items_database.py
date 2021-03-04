@@ -44,10 +44,14 @@ def discourse_item_from_database(discourse_item) -> dict:
     }
 
 
+# The objectID for every discourse item must be a 12-letter string with only hex digits (0123456789abcdef) Else,
+# we must use a different type for the _id field such as plain string, integer etc. In this case we will lose
+# createdAt value.
 def discourse_item_for_database(discourse_item_data: dict) -> dict:
     discourse_item_data['authorId'] = ObjectId(discourse_item_data['authorId'])
     if discourse_item_data['parentId'] is not None:
         discourse_item_data['parentId'] = ObjectId(discourse_item_data['parentId'])
+    # discourse_item_data['_id'] = ObjectId('11111111111111111111') (24 letters) (hex values only (0123456789abcdef))
     return discourse_item_data
 
 
@@ -74,7 +78,7 @@ async def retrieve_discourse_item(id: str) -> dict:
         return discourse_item_data
 
 
-async def update_discourse_item(id:str, data:dict):
+async def update_discourse_item(id: str, data: dict):
     if len(data) < 1:
         return False
     discourse_item = discourse_items_collection.find_one({'_id': ObjectId(id)})
