@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from server.models.discourses import (Discourse, UpdateDiscourse)
 from server.models.responses import ResponseModel, ErrorResponseModel
 from server.database.discourses_database import (add_discourse, delete_discourse, retrieve_discourse,
-                                                 retrieve_discourses, update_discourse)
+                                                 retrieve_discourses, update_discourse, retrieve_discourse_ids)
 
 router = APIRouter()
 
@@ -25,6 +25,12 @@ async def get_discourses():
         return ResponseModel.return_response(discourses)
     return ResponseModel.return_response({'message': 'Empty List'})
 
+@router.get('/ids', response_description='Discourses retrieved')
+async def get_discourse_ids():
+    discourses = await retrieve_discourse_ids()
+    if discourses:
+        return ResponseModel.return_response(discourses)
+    return ResponseModel.return_response({'message': 'Empty List'})
 
 @router.get('/{id}', response_description='Discourse retrieved')
 async def get_discourse(id: str):
