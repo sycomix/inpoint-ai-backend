@@ -27,11 +27,11 @@ async def discourse_from_database(discourse) -> dict:
     }
 
 
-async def discourse_add_discourse_items(discourse_data: dict):
+async def discourse_add_discourse_items(discourse_data: dict, include_id:bool=False):
     discourse_items_data = discourse_data['discourseItems']
     discourse_items_ids = []
     for discourse_item_data in discourse_items_data:
-        discourse_item = await add_discourse_item(discourse_item_data)
+        discourse_item = await add_discourse_item(discourse_item_data, include_id)
         discourse_items_ids.append(ObjectId(discourse_item['data']['id']))
     discourse_data['discourseItems'] = discourse_items_ids
     return discourse_data
@@ -96,8 +96,10 @@ async def retrieve_discourse(id: str):
         return discourse_data
 
 
-async def add_discourse(discourse_data):
-    discourse_data = await discourse_add_discourse_items(discourse_data)
+async def add_discourse(discourse_data, include_id:bool=False):
+    discourse_data = await discourse_add_discourse_items(discourse_data, include_id)
+    if include_id:
+        discourse_data['_id'] = ObjectId(discourse_data['_id'])
     discourse = await discourses_collection.insert_one(discourse_data)
     new_discourse = await discourses_collection.find_one({'_id': discourse.inserted_id})
     new_discourse_data = await discourse_from_database(new_discourse)
