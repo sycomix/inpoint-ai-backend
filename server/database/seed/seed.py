@@ -19,7 +19,7 @@ discourses_collection = database.get_collection('discourses')
 
 async def _add_discourses(discourses: List[dict]):
     for discourse in discourses:
-        print(discourse['_id'])
+        print(f"Add seed discourse: {discourse['_id']}")
         await add_discourse(discourse, include_id=True)
 
 
