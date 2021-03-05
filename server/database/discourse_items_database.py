@@ -26,7 +26,6 @@ def discourse_item_from_database(discourse_item) -> dict:
             'likes': discourse_item['likes'],
             'dislikes': discourse_item['dislikes'],
             'createdAt': discourse_item['_id'].generation_time.strftime('%Y-%m-%d %H:%M:%S')
-
         }
     } if discourse_item['parentId'] else {
         'group': 'nodes',
@@ -47,16 +46,17 @@ def discourse_item_from_database(discourse_item) -> dict:
 # The objectID for every discourse item must be a 12-letter string with only hex digits (0123456789abcdef) Else,
 # we must use a different type for the _id field such as plain string, integer etc. In this case we will lose
 # createdAt value.
-def discourse_item_for_database(discourse_item_data: dict) -> dict:
+def discourse_item_for_database(discourse_item_data: dict, include_id:bool=False) -> dict:
     discourse_item_data['authorId'] = ObjectId(discourse_item_data['authorId'])
     if discourse_item_data['parentId'] is not None:
         discourse_item_data['parentId'] = ObjectId(discourse_item_data['parentId'])
-    # discourse_item_data['_id'] = ObjectId('11111111111111111111') (24 letters) (hex values only (0123456789abcdef))
+    if include_id:
+        discourse_item_data['_id'] = ObjectId(discourse_item_data['_id'])
     return discourse_item_data
 
 
-async def add_discourse_item(discourse_item_data: dict):
-    discourse_item_data = discourse_item_for_database(discourse_item_data)
+async def add_discourse_item(discourse_item_data: dict, include_id:bool=False):
+    discourse_item_data = discourse_item_for_database(discourse_item_data, include_id)
     discourse_item = await discourse_items_collection.insert_one(discourse_item_data)
     new_discourse_item = await discourse_items_collection.find_one({'_id':discourse_item.inserted_id})
     new_discourse_item_data = discourse_item_from_database(new_discourse_item)

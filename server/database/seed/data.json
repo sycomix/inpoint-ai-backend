@@ -1,0 +1,60 @@
+{
+  "discourses": [
+    {
+      "_id": "603527d6e1b3b909c07ad848",
+      "discourseItems": [
+        {
+          "_id": "603527d6e1b3b909c07ad834",
+          "parentId": null,
+          "label": "Issue label",
+          "type": "issue",
+          "text": "An example of issue text",
+          "authorId": "603527d6e1b3b909c07ad860",
+          "likes": 20,
+          "dislikes": 2
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad835",
+          "parentId": "603527d6e1b3b909c07ad834",
+          "label": "Solution label",
+          "type": "solution",
+          "text": "My example of solution text",
+          "authorId": "603527d6e1b3b909c07ad861",
+          "likes": 4,
+          "dislikes": 3
+
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad836",
+          "parentId": "603527d6e1b3b909c07ad834",
+          "label": "Position in favor label",
+          "type": "position-in-favor",
+          "text": "An example of position in favor text",
+          "authorId": "603527d6e1b3b909c07ad862",
+          "likes": 10,
+          "dislikes": 30
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad837",
+          "parentId": "603527d6e1b3b909c07ad836",
+          "label": "Position against label",
+          "type": "position-against",
+          "text": "An example of position against text",
+          "authorId": "603527d6e1b3b909c07ad861",
+          "likes": 50,
+          "dislikes": 0
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad838",
+          "parentId": null,
+          "label": "Note label",
+          "type": "note",
+          "text": "An example of note text",
+          "authorId": "603527d6e1b3b909c07ad860",
+          "likes": 9,
+          "dislikes": 1
+        }
+      ]
+    }
+  ]
+}
