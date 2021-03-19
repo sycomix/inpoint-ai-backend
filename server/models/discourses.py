@@ -2,22 +2,28 @@ from typing import List, Optional
 from enum import Enum
 from pydantic import BaseModel, Field
 from server.models.discourse_items import DiscourseItem
+from server.models.discourse_items_links import DiscourseItemsLink
 
 
-class Purpose(str, Enum):
+class Action(str, Enum):
     add: str = 'add'
     delete: str = 'delete'
 
 
+class UpdateType(str, Enum):
+    discourseItem: str = 'discourseItem'
+    discourseItemsLink: str = 'discourseItemsLink'
+
+
 class Discourse(BaseModel):
     discourseItems: List[DiscourseItem] = Field(...)
+    discourseItemsLinks: Optional[List[DiscourseItemsLink]] = Field(None)
 
     class Config:
         schema_extra = {
             'example': {
                 'discourseItems': [
                         {
-                            'parentId': '603527d6e1b3b909c07ad834',
                             'label': 'issue 1',
                             'type': 'issue',
                             'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lorem '
@@ -32,7 +38,6 @@ class Discourse(BaseModel):
                             'dislikes': 3
                         },
                         {
-                            'parentId': '603527d6e1b3b909c07ad834',
                             'label': 'issue 1',
                             'type': 'issue',
                             'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lorem '
@@ -46,22 +51,30 @@ class Discourse(BaseModel):
                             'likes': 4,
                             'dislikes': 3
                         }
+                ],
+                'discourseItemsLinks': [
+                    {
+                        'sourceId': '603527d6e1b3b909c07ad834',
+                        'targetId': '603527d6e1b3b909c07ad834',
+                        'type':'normal'
+                    },
+                    {
+                        'sourceId': '603527d6e1b3b909c07ad834',
+                        'targetId': '603527d6e1b3b909c07ad834',
+                        'type': 'normal'
+                    }
                 ]
             }
         }
 
 
-class UpdateDiscourse(BaseModel):
-    purpose: Purpose = Field(...)
-    discourseItem: Optional[DiscourseItem] = Field(None)
-    id: Optional[str] = Field(None)
+class UpdateDiscourseAddDiscourseItem(BaseModel):
+    discourseItem: DiscourseItem = Field(...)
 
     class Config:
         schema_extra = {
             'example': {
-                'purpose': 'add',
                 'discourseItem': {
-                        'parentId': '603527d6e1b3b909c07ad834',
                         'label': 'issue 1',
                         'type': 'issue',
                         'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lorem '
@@ -75,6 +88,37 @@ class UpdateDiscourse(BaseModel):
                         'likes': 4,
                         'dislikes': 3
                 },
+                'discourseItemsLinks': {
+                    'sourceId': '603527d6e1b3b909c07ad834',
+                    'targetId': '603527d6e1b3b909c07ad834',
+                    'type': 'normal'
+                },
+                'id': '6036a279f5ab842234175f15'
+            }
+        }
+
+
+class UpdateDiscourseAddDiscourseItemsLink(BaseModel):
+    discourseItemsLink: DiscourseItemsLink = Field(...)
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'discourseItemsLinks': {
+                    'sourceId': '603527d6e1b3b909c07ad834',
+                    'targetId': '603527d6e1b3b909c07ad834',
+                    'type': 'normal'
+                }
+            }
+        }
+
+
+class UpdateDiscourseDeleteDiscourseItemOrLink(BaseModel):
+    id: str = Field(...)
+
+    class Config:
+        schema_extra = {
+            'example': {
                 'id': '6036a279f5ab842234175f15'
             }
         }

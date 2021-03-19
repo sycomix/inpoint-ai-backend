@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 
 class DiscourseItem(BaseModel):
-    parentId: Optional[str] = Field(None)
     label: str = Field(...)
     type: str = Field(...)
     text: str = Field(...)
@@ -14,7 +13,6 @@ class DiscourseItem(BaseModel):
     class Config:
         schema_extra = {
             'example': {
-                'parentId': '603527d6e1b3b909c07ad834',
                 'label': 'issue 1',
                 'type': 'issue',
                 'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lorem dolor, '
@@ -31,7 +29,6 @@ class DiscourseItem(BaseModel):
 
 
 class UpdateDiscourseItem(BaseModel):
-    parentId: Optional[str] = Field(None)
     label: Optional[str] = Field(None)
     type: Optional[str] = Field(None)
     text: Optional[str] = Field(None)
@@ -39,11 +36,9 @@ class UpdateDiscourseItem(BaseModel):
     likes: Optional[int] = Field(None)
     dislikes: Optional[int] = Field(None)
 
-
     class Config:
         schema_extra = {
             'example': {
-                'parentId': '603527d6e1b3b909c07ad834',
                 'label': 'issue 1',
                 'type': 'issue',
                 'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vestibulum lorem dolor, '

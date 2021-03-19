@@ -1,15 +1,9 @@
 from fastapi import APIRouter, Body, status
 from fastapi.encoders import jsonable_encoder
-from bson.objectid import ObjectId
 from server.models.discourse_items import (DiscourseItem, UpdateDiscourseItem)
 from server.models.responses import ResponseModel, ErrorResponseModel
-from server.database.discourse_items_database import (
-add_discourse_item,
-update_discourse_item,
-delete_discourse_item,
-retrieve_discourse_items,
-retrieve_discourse_item
-)
+from server.database.discourse_items_database import (add_discourse_item, update_discourse_item, delete_discourse_item,
+                                                      retrieve_discourse_items, retrieve_discourse_item)
 
 
 router = APIRouter()

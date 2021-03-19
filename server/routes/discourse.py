@@ -1,6 +1,9 @@
+from typing import Union
+from pydantic import Field
 from fastapi import APIRouter, Body, status
 from fastapi.encoders import jsonable_encoder
-from server.models.discourses import (Discourse, UpdateDiscourse)
+from server.models.discourses import (Discourse, UpdateDiscourseAddDiscourseItem, UpdateDiscourseAddDiscourseItemsLink,
+                                      UpdateDiscourseDeleteDiscourseItemOrLink, Action, UpdateType)
 from server.models.responses import ResponseModel, ErrorResponseModel
 from server.database.discourses_database import (add_discourse, delete_discourse, retrieve_discourse,
                                                  retrieve_discourses, update_discourse, retrieve_discourse_ids)
@@ -18,12 +21,23 @@ async def add_discourse_data(discourseItem: Discourse = Body(...)):
                                               f'The discourse couldn\'t be added')
 
 
-@router.get('/', response_description='Discourses retrieved')
-async def get_discourses():
-    discourses = await retrieve_discourses()
+@router.get('/frontend', response_description='Discourses retrieved for frontend')
+async def get_discourses_frontend():
+    client = 'frontend'
+    discourses = await retrieve_discourses(client)
     if discourses:
         return ResponseModel.return_response(discourses)
     return ResponseModel.return_response({'message': 'Empty List'})
+
+
+@router.get('/ai', response_description='Discourses retrieved for frontend')
+async def get_discourses_frontend():
+    client = 'ai'
+    discourses = await retrieve_discourses(client)
+    if discourses:
+        return ResponseModel.return_response(discourses)
+    return ResponseModel.return_response({'message': 'Empty List'})
+
 
 @router.get('/ids', response_description='Discourses retrieved')
 async def get_discourse_ids():
@@ -32,9 +46,21 @@ async def get_discourse_ids():
         return ResponseModel.return_response(discourses)
     return ResponseModel.return_response({'message': 'Empty List'})
 
-@router.get('/{id}', response_description='Discourse retrieved')
+
+@router.get('/{id}/frontend', response_description='Discourse retrieved')
 async def get_discourse(id: str):
-    discourse = await retrieve_discourse(id)
+    client = 'frontend'
+    discourse = await retrieve_discourse(id, client)
+    if discourse:
+        return ResponseModel.return_response(discourse)
+    return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
+                                              'Discourse doesn\'t exist')
+
+
+@router.get('/{id}/ai', response_description='Discourse retrieved')
+async def get_discourse(id: str):
+    client = 'ai'
+    discourse = await retrieve_discourse(id, client)
     if discourse:
         return ResponseModel.return_response(discourse)
     return ErrorResponseModel.return_response('An error occurred', status.HTTP_404_NOT_FOUND,
@@ -51,11 +77,21 @@ async def delete_discourse_data(id: str):
 
 
 @router.put('/{id}', response_description='Discourse updated')
-async def update_discourse_data(id: str, data: UpdateDiscourse = Body(...)):
+async def update_discourse_data(id: str, action: Action, update_type: UpdateType,
+                                data: Union[UpdateDiscourseAddDiscourseItem, UpdateDiscourseAddDiscourseItemsLink,
+                                            UpdateDiscourseDeleteDiscourseItemOrLink] = Body(...)):
+    if action == 'add':
+        if isinstance(data, UpdateDiscourseDeleteDiscourseItemOrLink):
+            return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
+                                                      'Expected UpdateDiscourseAddDiscourseItem with action=add!')
+    else:
+        if isinstance(data, UpdateDiscourseAddDiscourseItem) or isinstance(data, UpdateDiscourseAddDiscourseItemsLink):
+            return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
+                                                      'Expected UpdateDiscourseDeleteDiscourseItem with action=delete!')
     discourse_data = jsonable_encoder(data)
-    updated_discourse = await update_discourse(id, discourse_data)
+    updated_discourse = await update_discourse(id, action, update_type, discourse_data)
     if updated_discourse:
-        if type(updated_discourse)!=bool:
+        if type(updated_discourse) != bool:
             return ResponseModel.return_response(updated_discourse)
         else:
             return ResponseModel.return_response({'message': 'The whole discourse was deleted'})
