@@ -5,7 +5,6 @@
       "discourseItems": [
         {
           "_id": "603527d6e1b3b909c07ad834",
-          "parentId": null,
           "label": "Issue label",
           "type": "issue",
           "text": "An example of issue text",
@@ -15,7 +14,6 @@
         },
         {
           "_id": "603527d6e1b3b909c07ad835",
-          "parentId": "603527d6e1b3b909c07ad834",
           "label": "Solution label",
           "type": "solution",
           "text": "My example of solution text",
@@ -26,7 +24,6 @@
         },
         {
           "_id": "603527d6e1b3b909c07ad836",
-          "parentId": "603527d6e1b3b909c07ad834",
           "label": "Position in favor label",
           "type": "position-in-favor",
           "text": "An example of position in favor text",
@@ -36,7 +33,6 @@
         },
         {
           "_id": "603527d6e1b3b909c07ad837",
-          "parentId": "603527d6e1b3b909c07ad836",
           "label": "Position against label",
           "type": "position-against",
           "text": "An example of position against text",
@@ -46,13 +42,32 @@
         },
         {
           "_id": "603527d6e1b3b909c07ad838",
-          "parentId": null,
           "label": "Note label",
           "type": "note",
           "text": "An example of note text",
           "authorId": "603527d6e1b3b909c07ad860",
           "likes": 9,
           "dislikes": 1
+        }
+      ],
+      "discourseItemsLinks": [
+        {
+          "_id": "603527d6e1b3b909c07ad840",
+          "sourceId": "603527d6e1b3b909c07ad835",
+          "targetId": "603527d6e1b3b909c07ad834",
+          "type": "normal"
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad841",
+          "sourceId": "603527d6e1b3b909c07ad837",
+          "targetId": "603527d6e1b3b909c07ad834",
+          "type": "normal"
+        },
+        {
+          "_id": "603527d6e1b3b909c07ad842",
+          "sourceId": "603527d6e1b3b909c07ad836",
+          "targetId": "603527d6e1b3b909c07ad834",
+          "type": "normal"
         }
       ]
     }
