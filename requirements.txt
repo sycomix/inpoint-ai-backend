@@ -44,3 +44,4 @@ urllib3==1.26.3
 uvicorn==0.13.4
 watchgod==0.7
 websockets==8.1
+beautifulsoup4==4.9.3

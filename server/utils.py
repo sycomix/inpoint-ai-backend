@@ -1,7 +1,19 @@
 import json
 import requests
-from bs4 import BeautifulSoup #beautifulsoup4==4.9.3
+from bs4 import BeautifulSoup
+import html
+from decouple import config
 
+ERGOLOGIC_WORKSPACES_URL = config('ERGOLOGIC_WORKSPACES_URL')
+ERGOLOGIC_DISCUSSIONS_URL = config('ERGOLOGIC_DISCUSSIONS_URL')
+
+position_number_to_string = {
+    -2: 'Solution',
+    -1: 'Position-against',
+    0: 'Note',
+    1: 'Position-in-favor',
+    2: 'Issue',
+}
 
 def remove_html(text):
     """
@@ -14,8 +26,8 @@ def get_data_from_ergologic():
     """
     Function which GETs data from the Ergologic backend.
     """
-    workspaces_url = 'http://fc.ergologic.gr:8041/wspSpaces.php'
-    discussions_url = 'http://fc.ergologic.gr:8041/wspDiscussions.php'
+    workspaces_url = ERGOLOGIC_WORKSPACES_URL
+    discussions_url = ERGOLOGIC_DISCUSSIONS_URL
     workspaces_json = requests.get(workspaces_url).json()
     discussions_json = requests.get(discussions_url).json()
 
@@ -31,8 +43,8 @@ def get_data_from_ergologic():
         {'id': wsp['id'],
          'SpaceId': wsp['SpaceId'],
          'UserId': wsp['UserId'],
-         'Position': wsp['Position'],
+         'Position': position_number_to_string.get(wsp['Position'], 'Issue'),
          'DiscussionText': remove_html(wsp['DiscussionText'])
         } for wsp in discussions_json
     ]
-    return
+    return (workspaces, discussions)
