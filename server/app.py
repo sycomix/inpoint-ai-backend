@@ -4,6 +4,13 @@ from server.routes.discourse_item import router as DiscourseItemRouter
 from server.routes.discourse import router as DiscourseRouter
 from server.routes.discourse_items_link import router as DiscourseItemsLinkRouter
 import server.utils as utils
+import requests
+from decouple import config
+from fastapi import status
+
+from server.models.responses import ErrorResponseModel
+
+AI_BACKEND_URL = config('AI_BACKEND_URL')
 
 app = FastAPI(docs_url='/api/docs', redoc_url=None)
 
@@ -27,5 +34,17 @@ async def seed_database():
 @app.get('/api/retrieve_data', tags=['Root'])
 async def retrieve_data():
     workspaces, discussions = utils.get_data_from_ergologic()
-    # call ai back-end
-    return {'message': 'UPAT back-end updated'}
+
+    # Call AI back-end
+    try:
+        res = requests.post(f'{AI_BACKEND_URL}/analyze', json={'workspaces': workspaces, 'discussions':discussions})
+    except requests.exceptions.RequestException as e:
+        return ErrorResponseModel.return_response(str(e), status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                                  'Failed to communicate with the ai back-end application!')
+    if res.status_code == 200:
+        json_data = res.json()
+    else:
+        return ErrorResponseModel.return_response(f'{res.text}, {res.status_code}', status.HTTP_424_FAILED_DEPENDENCY,
+                                                  'Failed to communicate with the ai back-end application!')
+
+    return json_data
