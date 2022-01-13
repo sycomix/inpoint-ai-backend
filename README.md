@@ -1,4 +1,4 @@
-# The main back-end application of the inPOINT project.
+# The AI backend server of the inPOINT project.
 
 ## Setup for development (tested on Ubuntu)
 
@@ -18,14 +18,14 @@ System Dependencies:
 ```bash
 docker-compose up
 ```
-Check that the back-end application is available at http://localhost:8000
+Check that the backend server is available at http://localhost:8000
 
 If this is not the case, good luck :-)!
 
-Check the documentation of the API of the application at http://localhost:8000/api/docs
+Check the documentation of the server at http://localhost:8000/docs
 
 Check the database connection by utilizing an endpoint.
-For example, the http://localhost:8000/api/discourses/ endpoint should return a JSON
+For example, the http://localhost:8000/analyze endpoint should return a JSON
 object and not an internal server error
 
 ## Interacting with MongoDB using MongoDB Compass
