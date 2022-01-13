@@ -2,7 +2,7 @@ from decouple import config
 
 
 # Initial Setup
-debug = config('AI_BACKEND_DEBUG', cast=bool)
+debug = config('BACKEND_DEBUG', cast=bool)
 
 
 # Connection data

@@ -4,8 +4,14 @@ import html
 import spacy
 import fasttext
 import functools
-import ai.config as config
+import requests
 from bs4 import BeautifulSoup
+from decouple import config
+
+import ai.config
+
+ERGOLOGIC_WORKSPACES_URL = config('ERGOLOGIC_WORKSPACES_URL')
+ERGOLOGIC_DISCUSSIONS_URL = config('ERGOLOGIC_DISCUSSIONS_URL')
 
 class Models:
     __en_nlp = None
@@ -42,7 +48,7 @@ def detect_language(model, text):
         return 'english'
     elif language == '__label__el':
         return 'greek'
-    elif config.debug:
+    elif ai.config.debug:
         print(f'{text} -> Unsupported language {language}', file = sys.stderr)
 
 
@@ -98,13 +104,12 @@ def remove_stopwords_from_keyphrases(keyphrases, nlp):
     ]
             
 
-
 def counter(func):
     """
     Print the elapsed system time in seconds, 
     if only the debug flag is set to True.
     """
-    if not config.debug:
+    if not ai.config.debug:
         return func
     @functools.wraps(func)
     def wrapper_counter(*args, **kwargs):
@@ -114,3 +119,35 @@ def counter(func):
         print(f'{func.__name__}: {end_time - start_time} secs')
         return result
     return wrapper_counter
+
+
+def get_data_from_ergologic():
+    """
+    Function which GETs data from the Ergologic backend.
+    """
+    workspaces_url = ERGOLOGIC_WORKSPACES_URL
+    discussions_url = ERGOLOGIC_DISCUSSIONS_URL
+
+    try:
+        workspaces_json = requests.get(workspaces_url).json()
+        discussions_json = requests.get(discussions_url).json()
+    except Exception as e:
+        raise e
+
+    workspaces = [
+        {'id': wsp['id'],
+         'OwnerId': wsp['OwnerId'],
+         'Description': remove_html(wsp['Description']),
+         'Summary': remove_html(wsp['Summary'])
+        } for wsp in workspaces_json
+    ]
+
+    discussions = [
+        {'id': wsp['id'],
+         'SpaceId': wsp['SpaceId'],
+         'UserId': wsp['UserId'],
+         'Position': ai.config.position_number_to_string.get(wsp['Position'], 'Issue'),
+         'DiscussionText': remove_html(wsp['DiscussionText'])
+        } for wsp in discussions_json
+    ]
+    return (workspaces, discussions)

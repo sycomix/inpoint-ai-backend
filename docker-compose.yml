@@ -1,6 +1,19 @@
 version: '3.1'
 
 services:
+  ai_db:
+    image: neo4j:4.2.3
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_INITDB_ROOT_PASSWORD}
+      NEO4J_ACCEPT_LICENSE_AGREEMENT: 'yes'
+      NEO4J_dbms_memory_heap_max__size: '${NEO4J_MAX_HEAP_SIZE}'
+      NEO4J_dbms_memory_heap_initial__size: '${NEO4J_INITIAL_HEAP_SIZE}'
+      NEO4J_dbms_security_procedures_unrestricted: 'gds.*'
+      NEO4JLABS_PLUGINS: '["graph-data-science"]'
+    container_name: ${NEO4J_CONTAINER_NAME}
+    ports:
+      - ${NEO4J_HTTP_PORT}:7474
+      - ${NEO4J_BOLT_PORT}:7687
   db:
     image: mongo
     environment:
@@ -15,7 +28,8 @@ services:
     volumes:
     - .:/app
     ports:
-    - ${MAIN_BACKEND_SERVER_PORT}:${MAIN_BACKEND_SERVER_PORT}
+    - ${BACKEND_SERVER_PORT}:${BACKEND_SERVER_PORT}
     depends_on:
       - db
-    container_name: ${MAIN_BACKEND_CONTAINER_NAME}
+      - ai_db
+    container_name: ${BACKEND_CONTAINER_NAME}

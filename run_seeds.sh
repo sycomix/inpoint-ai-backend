@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker exec -it inpoint_main_backend python server/database/seed/seed.py
+docker exec -it inpoint_backend python server/database/seed/seed.py
