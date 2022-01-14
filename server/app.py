@@ -50,7 +50,6 @@ async def analyze():
         )
 
     # Each workspace will hold a list of results.
-    #results = {wsp['id']: None for wsp in workspaces}
     results = []
 
     for wsp in workspaces:
@@ -97,10 +96,13 @@ async def analyze():
                 'Keyphrases': list(set(value['Keyphrases']))}
                     for position, value in node_groups.items()
         }
-        node_groups['_id'] = wsp['id']
-        # Assign the node groups to the specific workspace.
-        results.append(node_groups)
 
+        # Each workspace is a dict object, which contains 
+        # its id and text summaries / keyphrases grouped by node (argument) type.
+        results.append({'_id': wsp['id'], **node_groups})
+
+    # Connect to MongoDB, delete older summaries & keyphrases
+    # from all workspaces and insert the newly created ones.
     client = MongoClient(MONGO_CONNECTION_STRING)
     mongo_database = client['inpoint']
     workspaces_collection = mongo_database['workspaces']
