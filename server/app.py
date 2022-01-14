@@ -71,17 +71,23 @@ async def analyze():
             similarity_graph.louvain(write_property = 'community')
 
         # Group results based on their node types.
-        node_groups = {k: [] for k in ai.config.node_types if k != 'Issue'}
+        node_groups = {node: {'Summaries': [], 'Keyphrases': []}
+                      for node in ai.config.node_types if node != 'Issue'}
 
         # Summarize each community of discussions and group them based on their position.
         for id, [position, _, summary, keyphrases] in summarize_communities(
                                                       database, en_nlp, el_nlp, 
                                                       lang_det, ai.config.top_n, 
-                                                      ai.config.top_sent).items():   
-            node_groups[position].append({
-                'Summary': summary,
-                'Keyphrases': keyphrases
-            })
+                                                      ai.config.top_sent).items():
+            node_groups[position]['Summaries'].append(summary)
+            node_groups[position]['Keyphrases'].extend(keyphrases)
+
+        # Remove duplicate keyphrases from the node groups.
+        node_groups = {position: {
+            'Summaries': value['Summaries'], 
+                'Keyphrases': list(set(value['Keyphrases']))}
+                    for position, value in node_groups.items()
+        }
         
         # Assign the node groups to the specific workspace.
         results[wsp['id']] = node_groups
