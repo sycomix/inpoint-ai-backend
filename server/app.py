@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from py2neo import Graph
 from fastapi import status
+from decouple import config
+from pymongo import MongoClient
 
 from server.models.responses import ErrorResponseModel
 
@@ -18,6 +20,12 @@ from ai.create import (
 
 app = FastAPI(docs_url='/docs', redoc_url=None)
 en_nlp, el_nlp, lang_det = ai.utils.Models.load_models()
+
+MONGO_INITDB_ROOT_USERNAME = config('MONGO_INITDB_ROOT_USERNAME')
+MONGO_INITDB_ROOT_PASSWORD = config('MONGO_INITDB_ROOT_PASSWORD')
+MONGO_URL = config('MONGO_URL')
+MONGO_LOCALHOST_PORT = config('MONGO_LOCALHOST_PORT')
+MONGO_CONNECTION_STRING = f'mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@{MONGO_URL}:{MONGO_LOCALHOST_PORT}'
 
 
 @app.get('/', tags=['Root'])
@@ -42,7 +50,8 @@ async def analyze():
         )
 
     # Each workspace will hold a list of results.
-    results = {wsp['id']: None for wsp in workspaces}
+    #results = {wsp['id']: None for wsp in workspaces}
+    results = []
 
     for wsp in workspaces:
         # Delete the entire workspace graph.
@@ -88,7 +97,13 @@ async def analyze():
                 'Keyphrases': list(set(value['Keyphrases']))}
                     for position, value in node_groups.items()
         }
-        
+        node_groups['_id'] = wsp['id']
         # Assign the node groups to the specific workspace.
-        results[wsp['id']] = node_groups
+        results.append(node_groups)
+
+    client = MongoClient(MONGO_CONNECTION_STRING)
+    mongo_database = client['inpoint']
+    workspaces_collection = mongo_database['workspaces']
+    workspaces_collection.insert_many(results)
+
     return results
