@@ -5,6 +5,7 @@ from decouple import config
 from pymongo import MongoClient
 
 from server.models.responses import ErrorResponseModel
+from fastapi.responses import JSONResponse
 
 import ai.config
 import ai.utils
@@ -31,6 +32,21 @@ MONGO_CONNECTION_STRING = f'mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB
 @app.get('/', tags=['Root'])
 async def read_root():
     return {'message': 'Welcome to the Main back-end!'}
+
+
+@app.get('/get-analysis/{workspace_id}', tags=['Root'])
+async def get_analysis(workspace_id: int):
+    client = MongoClient(MONGO_CONNECTION_STRING)
+    mongo_database = client['inpoint']
+    workspaces_collection = mongo_database['workspaces']
+    workspace = workspaces_collection.find_one({'_id': workspace_id})
+
+    # If the workspace does not exist.
+    if workspace is None:
+        not_found_response = {}
+        return JSONResponse(content=not_found_response, status_code=404)
+    # If the workspace exists.
+    return workspace
 
 
 @app.get('/analyze', tags=['Root'])
