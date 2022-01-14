@@ -104,6 +104,7 @@ async def analyze():
     client = MongoClient(MONGO_CONNECTION_STRING)
     mongo_database = client['inpoint']
     workspaces_collection = mongo_database['workspaces']
+    workspaces_collection.remove({})
     workspaces_collection.insert_many(results)
 
     return results
