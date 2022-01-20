@@ -1,5 +1,5 @@
 import pytextrank
-from ai.utils import remove_stopwords_from_keyphrases
+import ai.utils
 
 
 def run_textrank(text, nlp):
@@ -20,7 +20,9 @@ def run_textrank(text, nlp):
     return doc
 
 
-def keyword_extraction(doc, nlp, top_n = 10, remove_stopwords = False):
+def keyword_extraction(doc, nlp, top_n = 10, 
+                       remove_punctuation_and_whitespace = True, 
+                       remove_stopwords = False):
     """
     Function that extracts the top_n most significant
     keywords, using textrank. The algorithm is implemented
@@ -32,10 +34,14 @@ def keyword_extraction(doc, nlp, top_n = 10, remove_stopwords = False):
         phrase.text for phrase in doc._.phrases 
         if phrase.text.lower() not in nlp.Defaults.stop_words
     ][:top_n]
-    
-    # Remove stopwords included in the keyphrases.
+
+    # Remove punctuation and unnecessary whitespace from the keyphrases.
+    if remove_punctuation_and_whitespace:
+        keyphrases = ai.utils.remove_punctuation_and_whitespace_from_keyphrases(keyphrases)
+
+    # Remove stopwords from the keyphrases.
     if remove_stopwords:
-        keyphrases = remove_stopwords_from_keyphrases(keyphrases, nlp)
+        keyphrases = ai.utils.remove_stopwords_from_keyphrases(keyphrases, nlp)
 
     return keyphrases
 
