@@ -73,7 +73,7 @@ def calc_similarity_pairs(text_ids, en_nlp, el_nlp, lang_det, cutoff):
 
     sim_pairs_el = (
         textual_similarity(el_nlp, 'greek', el_texts, el_texts) 
-        if len(en_texts) > 2 else []
+        if len(el_texts) > 2 else []
     )
     
     return [
