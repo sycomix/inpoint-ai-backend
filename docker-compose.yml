@@ -15,7 +15,7 @@ services:
       - ${NEO4J_HTTP_PORT}:7474
       - ${NEO4J_BOLT_PORT}:7687
   db:
-    image: mongo
+    image: mongo:4.4.11
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
