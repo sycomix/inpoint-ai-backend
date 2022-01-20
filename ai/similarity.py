@@ -68,12 +68,12 @@ def calc_similarity_pairs(text_ids, en_nlp, el_nlp, lang_det, cutoff):
     # Calculate all textual similarity pairs.
     sim_pairs_en = (
         textual_similarity(en_nlp, 'english', en_texts, en_texts)
-        if len(en_texts) > 2 else []
+        if len(en_texts) >= 2 else []
     )
 
     sim_pairs_el = (
         textual_similarity(el_nlp, 'greek', el_texts, el_texts) 
-        if len(en_texts) > 2 else []
+        if len(el_texts) >= 2 else []
     )
     
     return [
