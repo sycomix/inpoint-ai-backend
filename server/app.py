@@ -1,9 +1,10 @@
 from fastapi import FastAPI
+from fastapi import Query
 from py2neo import Graph
 from fastapi import status
 from decouple import config
 from pymongo import MongoClient
-
+from typing import List
 from server.models.responses import ErrorResponseModel
 from fastapi.responses import JSONResponse
 
@@ -34,19 +35,20 @@ async def read_root():
     return {'message': 'Welcome to the Main back-end!'}
 
 
-@app.get('/get-analysis/{workspace_id}', tags=['Root'])
-async def get_analysis(workspace_id: int):
+@app.get('/get-analysis', tags=['Root'])
+async def get_analysis(q: List[int] = Query(...)):
+    workspace_ids = q
     client = MongoClient(MONGO_CONNECTION_STRING)
     mongo_database = client['inpoint']
     workspaces_collection = mongo_database['workspaces']
-    workspace = workspaces_collection.find_one({'_id': workspace_id})
+    workspaces = workspaces_collection.find({'_id': {'$in': workspace_ids}})
 
-    # If the workspace does not exist.
-    if workspace is None:
+    # If there are no workspaces, return early.
+    if workspaces is None:
         not_found_response = {}
         return JSONResponse(content=not_found_response, status_code=404)
-    # If the workspace exists.
-    return workspace
+
+    return {'workspaces': list(workspaces)}
 
 
 @app.get('/analyze', tags=['Root'])
