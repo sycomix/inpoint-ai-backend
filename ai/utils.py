@@ -1,6 +1,7 @@
 import sys
 import time
 import html
+import string
 import spacy
 import fasttext
 import functools
@@ -68,6 +69,17 @@ def remove_html(text):
     return BeautifulSoup(html.unescape(text), features = 'html.parser').get_text(strip = True)
 
 
+def remove_punctuation_and_whitespace(text):
+    """
+    Function which replaces punctuation with a space character 
+    and then removes unnecessary whitespace characters.
+    """
+    text = text.translate (
+        str.maketrans(string.punctuation, ' ' * len(string.punctuation))
+    )
+    return ' '.join(text.split())
+
+
 def preprocess(text, nlp, language):
     """
     Function which removes all stopwords,
@@ -91,6 +103,14 @@ def preprocess(text, nlp, language):
         )
 
 
+def remove_punctuation_and_whitespace_from_keyphrases(keyphrases):
+    """
+    Function which removes all punctuation and unnecessary whitespace,
+    from the keyphrases after they have been formed.
+    """
+    return list(map(remove_punctuation_and_whitespace, keyphrases))
+
+
 def remove_stopwords_from_keyphrases(keyphrases, nlp):
     """
     Function which removes all stopwords,
@@ -102,7 +122,7 @@ def remove_stopwords_from_keyphrases(keyphrases, nlp):
             if word.lower() not in nlp.Defaults.stop_words
         ) for keyphrase in keyphrases
     ]
-            
+
 
 def counter(func):
     """
