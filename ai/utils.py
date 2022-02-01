@@ -111,17 +111,31 @@ def remove_punctuation_and_whitespace_from_keyphrases(keyphrases):
     return list(map(remove_punctuation_and_whitespace, keyphrases))
 
 
-def remove_stopwords_from_keyphrases(keyphrases, nlp):
+def remove_stopwords_from_keyphrases(keyphrases, nlp, language, only_prefixes = False):
     """
-    Function which removes all stopwords,
-    from the keyphrases after they have been formed.
+    Function which removes all stopwords or only the prefixed stopwords,
+    from the keyphrases after they have been formed. Each keyphrase 
+    is split on multiple prefixes and the minimum keyphrase 
+    in terms of length is selected.
     """
-    return [
-        ' '.join(
-            word for word in keyphrase.split()
-            if word.lower() not in nlp.Defaults.stop_words
-        ) for keyphrase in keyphrases
-    ]
+    # Select the correct list of prefixes based on the language.
+    prefixes = (
+        ai.config.en_stopword_prefixes if language == 'english'
+        else ai.config.el_stopword_prefixes
+    )
+    if only_prefixes:
+        return [
+            min((keyphrase.split(prefix, 1)[-1]
+            for prefix in prefixes), key = len)
+            for keyphrase in keyphrases
+        ]
+    else:
+        return [
+            ' '.join(
+                word for word in keyphrase.split()
+                if word.lower() not in nlp.Defaults.stop_words
+            ) for keyphrase in keyphrases
+        ]
 
 
 def counter(func):

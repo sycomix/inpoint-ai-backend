@@ -29,3 +29,5 @@ position_number_to_string = {
 cutoff = 0.5
 top_n = 10
 top_sent = 5
+en_stopword_prefixes = ['and ', 'or ']
+el_stopword_prefixes = ['και ', 'ή ']

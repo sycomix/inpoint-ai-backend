@@ -41,18 +41,21 @@ def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
     # Iterate each community id and its contents.
     for community, (position, ids, text) in communities.items():
 
-        # Select the nlp object depending on language.
-        nlp = (
-            en_nlp
-            if detect_language(lang_det, text) == 'english' 
-            else el_nlp
-        )
-
         # If the community contains no text,
         # or contains no more that 2 documents,
         # then don't summarize it.
         if text == '' or len(ids) < 2:
             continue
+
+        # Detect the language of the text.
+        language = detect_language(lang_det, text)
+        
+        # Select the nlp object depending on language.
+        nlp = (
+            en_nlp
+            if language == 'english' 
+            else el_nlp
+        )
 
         # Run textrank and obtain the processed document.
         doc = run_textrank(text, nlp)
@@ -62,6 +65,6 @@ def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
             position,
             ids,
             text_summarization(doc, nlp, top_n, top_sent),
-            keyword_extraction(doc, nlp, top_n)
+            keyword_extraction(doc, nlp, language, top_n)
         ]
     return results
