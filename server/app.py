@@ -10,15 +10,21 @@ from fastapi.responses import JSONResponse
 
 import ai.config
 import ai.utils
-from ai.neo4j_wrapper import Neo4jDatabase
-from ai.graph_algos import GraphAlgos
 from ai.utils import counter
-from ai.select import summarize_communities
+from ai.neo4j_wrapper import (
+    Neo4jDatabase, 
+    GraphAlgos
+)
+from ai.select import (
+    summarize_communities,
+    aggregate_summaries_keyphrases
+)
 from ai.create import (
     extract_node_groups,
     create_discussion_nodes,
     create_similarity_graph
 )
+
 
 app = FastAPI(docs_url='/docs', redoc_url=None)
 en_nlp, el_nlp, lang_det = ai.utils.Models.load_models()
@@ -80,13 +86,13 @@ async def analyze():
             if discussion['SpaceId'] == wsp['id']
         ]
 
-        # Create node groups from the wsp_discussions object.
+        # Create node groups from the discussions object.
         node_groups = \
             extract_node_groups(wsp_discussions, ai.config.node_types, ai.config.fields)
 
         # Create the discussion nodes in the Neo4j Database.
         create_discussion_nodes(graph, node_groups, ai.config.fields)
-    
+
         # Create the similarity graph.
         create_similarity_graph(graph, node_groups, 
                             ai.config.node_types, ai.config.fields, 
@@ -96,28 +102,26 @@ async def analyze():
         with GraphAlgos(database, ['Node'], ['is_similar']) as similarity_graph:
             similarity_graph.louvain(write_property = 'community')
 
-        # Group results based on their node types.
-        node_groups = {node: {'Summaries': [], 'Keyphrases': []}
+        # Group summaries based on their node types.
+        node_groups = {node: {'Summaries': []}
                       for node in ai.config.node_types if node != 'Issue'}
 
         # Summarize each community of discussions and group them based on their position.
-        for id, [position, _, summary, keyphrases] in summarize_communities(
+        for id, [position, _, summary] in summarize_communities(
                                                       database, en_nlp, el_nlp, 
                                                       lang_det, ai.config.top_n, 
-                                                      ai.config.top_sent).items():
+                                                      ai.config.top_sent).items():   
             node_groups[position]['Summaries'].append(summary)
-            node_groups[position]['Keyphrases'].extend(keyphrases)
 
-        # Remove duplicate keyphrases from the node groups.
-        node_groups = {position: {
-            'Summaries': value['Summaries'], 
-                'Keyphrases': list(set(value['Keyphrases']))}
-                    for position, value in node_groups.items()
-        }
-
-        # Each workspace is a dict object, which contains 
-        # its id and text summaries / keyphrases grouped by node (argument) type.
-        results.append({'_id': wsp['id'], **node_groups})
+        # Produce an aggregated summary and keyphrases.
+        aggregated = aggregate_summaries_keyphrases(
+            node_groups, lang_det, en_nlp, el_nlp, ai.config.top_n, ai.config.top_sent
+        )
+        
+        # Each workspace is a dict object, which contains
+        # its id, text summaries grouped by node (argument)
+        # type, an aggregated summary and a list of keyphrases.
+        results.append({'_id': wsp['id'], **aggregated, **node_groups})
 
     # Connect to MongoDB, delete older summaries & keyphrases
     # from all workspaces and insert the newly created ones.

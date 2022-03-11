@@ -27,9 +27,8 @@ def extract_id_texts_from_communities(database):
 @counter
 def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
     """
-    Function that performs text summarization and keyword
-    extraction on all communities, and returns
-    these results.
+    Function that performs text summarization on all communities,
+    and returns their summaries.
     """
     communities = extract_id_texts_from_communities(database)
 
@@ -64,7 +63,45 @@ def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
         results[community] = [
             position,
             ids,
-            text_summarization(doc, nlp, top_n, top_sent),
-            keyword_extraction(doc, nlp, language, top_n)
+            text_summarization(doc, nlp, top_n, top_sent)
         ]
+    return results
+
+
+def aggregate_summaries_keyphrases(workspace, lang_det, en_nlp, el_nlp, top_n, top_sent):
+    """
+    Function that aggregates summaries from each workspace,
+    and produces keyphrases from the aggregated summary.
+    """
+    # Initialize the results.
+    results = {
+        'Aggregated': {'Summary': '', 'Keyphrases': []},
+    }
+
+    # Aggregate all earlier produced summaries.
+    aggregated_summary = ' '.join(
+        summary for item in workspace.values()
+        for summary in item['Summaries']
+    ).replace('\n', ' ')
+
+    # If the aggregated summary is not empty, run textRank.
+    if aggregated_summary:
+
+        # Detect the language of the aggregated summary.
+        language = detect_language(lang_det, aggregated_summary)
+
+        # Select the nlp object depending on language.
+        nlp = (
+            en_nlp
+            if language == 'english' 
+            else el_nlp
+        )
+
+        # Run textrank on the aggregated summary.
+        doc = run_textrank(aggregated_summary, nlp)
+
+        results['Aggregated'] = {
+            'Summary': text_summarization(doc, nlp, top_n, top_sent),
+            'Keyphrases': keyword_extraction(doc, nlp, language, 2 * top_n)
+        }
     return results
