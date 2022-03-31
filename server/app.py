@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from typing import List
 from server.models.responses import ErrorResponseModel
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 import ai.config
 import ai.utils
@@ -27,6 +28,15 @@ from ai.create import (
 
 
 app = FastAPI(docs_url='/docs', redoc_url=None)
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 en_nlp, el_nlp, lang_det = ai.utils.Models.load_models()
 
 MONGO_INITDB_ROOT_USERNAME = config('MONGO_INITDB_ROOT_USERNAME')
