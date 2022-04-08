@@ -1,3 +1,4 @@
+from typer import Argument
 from fastapi import FastAPI
 from fastapi import Query
 from py2neo import Graph
@@ -25,6 +26,8 @@ from ai.create import (
     create_discussion_nodes,
     create_similarity_graph
 )
+
+from ai.classification import ArgumentClassifier
 
 
 app = FastAPI(docs_url='/docs', redoc_url=None)
@@ -83,6 +86,9 @@ async def analyze():
             'Failed to communicate properly with the ergologic endpoint!'
         )
 
+    # Train the argument classifier from all texts.
+    ArgumentClassifier.train_classifiers(discussions, lang_det)
+
     # Each workspace will hold a list of results.
     results = []
 
@@ -95,6 +101,9 @@ async def analyze():
             discussion for discussion in discussions 
             if discussion['SpaceId'] == wsp['id']
         ]
+
+        # Suggest new argument types for each discussion in the current workspace.
+        wsp_suggestions = ArgumentClassifier.suggest_labels(wsp_discussions, lang_det)
 
         # Create node groups from the discussions object.
         node_groups = \
@@ -131,7 +140,7 @@ async def analyze():
         # Each workspace is a dict object, which contains
         # its id, text summaries grouped by node (argument)
         # type, an aggregated summary and a list of keyphrases.
-        results.append({'_id': wsp['id'], **aggregated, **node_groups})
+        results.append({'_id': wsp['id'], **aggregated, **node_groups, **wsp_suggestions})
 
     # Connect to MongoDB, delete older summaries & keyphrases
     # from all workspaces and insert the newly created ones.

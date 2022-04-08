@@ -17,7 +17,7 @@ ERGOLOGIC_DISCUSSIONS_URL = config('ERGOLOGIC_DISCUSSIONS_URL')
 class Models:
     __en_nlp = None
     __el_nlp = None
-    __ang_det = None
+    __lang_det = None
 
     @classmethod
     def load_models(cls):
@@ -29,12 +29,12 @@ class Models:
         if cls.__en_nlp is None:
             cls.__en_nlp = spacy.load('en_core_web_lg')
             cls.__el_nlp = spacy.load('el_core_news_lg')
-            cls.__ang_det = fasttext.load_model('/downloads/lid.176.bin')
+            cls.__lang_det = fasttext.load_model('/downloads/lid.176.bin')
 
         return (
             cls.__en_nlp,
             cls.__el_nlp,
-            cls.__ang_det
+            cls.__lang_det
         )
 
 
