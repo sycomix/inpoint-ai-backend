@@ -1,7 +1,11 @@
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from typer import Argument
-from ai.utils import detect_language
+from ai.utils import (
+    counter,
+    detect_language,
+    remove_punctuation_and_whitespace
+)
 from ai import config
 
 class ArgumentClassifier:
@@ -26,20 +30,22 @@ class ArgumentClassifier:
 
     # Suggest different argument types based on documents.
     @staticmethod
+    @counter
     def suggest_labels(discussions, lang_det):
         res = []
         for discussion in discussions:
-            language = detect_language(lang_det, discussion['DiscussionText'])
+            text = discussion['DiscussionText']
+            language = detect_language(lang_det, text)
+            text = remove_punctuation_and_whitespace(text)
             if language == 'english':
-                predicted = ArgumentClassifier.english_classifier.predict([discussion['DiscussionText']])[0]
+                predicted = ArgumentClassifier.english_classifier.predict([text])[0]
             elif language == 'greek':
-                predicted = ArgumentClassifier.greek_classifier.predict([discussion['DiscussionText']])[0]
+                predicted = ArgumentClassifier.greek_classifier.predict([text])[0]
             else:
                 continue
 
             if predicted != discussion['Position']:
                 res.append({
-                    'id': discussion['id'],
                     'suggested_argument_type': predicted,
                     'text': discussion['DiscussionText'],
                 })
@@ -48,6 +54,7 @@ class ArgumentClassifier:
         }
 
     @staticmethod
+    @counter
     def train_classifiers(discussions, lang_det):
         english_classifier = ArgumentClassifier()
         greek_classifier = ArgumentClassifier()
@@ -57,12 +64,14 @@ class ArgumentClassifier:
         for discussion in discussions:
             if discussion['Position'] in ['Issue', 'Solution']:
                 continue
-            language = detect_language(lang_det, discussion['DiscussionText'])
+            text = discussion['DiscussionText']
+            language = detect_language(lang_det, text)
+            text = remove_punctuation_and_whitespace(text)
             if language == 'english':
-                english_texts.append(discussion['DiscussionText'])
+                english_texts.append(text)
                 english_labels.append(discussion['Position'])
             elif language == 'greek':
-                greek_texts.append(discussion['DiscussionText'])
+                greek_texts.append(text)
                 greek_labels.append(discussion['Position'])
 
         english_classifier.train(english_texts, english_labels)
@@ -70,8 +79,6 @@ class ArgumentClassifier:
         ArgumentClassifier.english_classifier = english_classifier
         ArgumentClassifier.greek_classifier = greek_classifier
 
-        print(english_texts)
-        print(english_labels)
         if config.debug:
-            print(ArgumentClassifier.english_classifier.score(english_texts, english_labels))
-            print(ArgumentClassifier.greek_classifier.score(greek_texts, greek_labels))
+            print(f'English texts accuracy score {ArgumentClassifier.english_classifier.score(english_texts, english_labels)} %')
+            print(f'Greek texts accuracy score {ArgumentClassifier.greek_classifier.score(greek_texts, greek_labels)} %')
