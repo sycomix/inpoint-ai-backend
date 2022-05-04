@@ -72,8 +72,13 @@ async def get_analysis(q: List[int] = Query(...)):
 
 @app.post('/analyze', tags=['Root'])
 async def analyze(request: Request):
+    # Allow only localhost calls.
     ip = str(request.client.host)
-    print(f'##### IP: {ip}')
+    if not ip in ['172.20.0.1', '127.0.0.1']:
+        data = {
+            'message': f'IP {ip} is not allowed to access this resource.'
+        }
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=data)
 
     # Connect to the database.
     database = Neo4jDatabase(ai.config.uri, ai.config.username, ai.config.password)
