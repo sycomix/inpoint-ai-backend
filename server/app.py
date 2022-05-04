@@ -1,5 +1,5 @@
 from typer import Argument
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi import Query
 from py2neo import Graph
 from fastapi import status
@@ -71,7 +71,10 @@ async def get_analysis(q: List[int] = Query(...)):
 
 
 @app.post('/analyze', tags=['Root'])
-async def analyze():
+async def analyze(request: Request):
+    ip = str(request.client.host)
+    print(f'##### IP: {ip}')
+
     # Connect to the database.
     database = Neo4jDatabase(ai.config.uri, ai.config.username, ai.config.password)
     graph = Graph(ai.config.uri, auth = (ai.config.username, ai.config.password))
