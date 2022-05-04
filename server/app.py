@@ -74,7 +74,7 @@ async def get_analysis(q: List[int] = Query(...)):
 async def analyze(request: Request):
     # Allow only localhost calls.
     ip = str(request.client.host)
-    if not ip in ['172.20.0.1', '127.0.0.1']:
+    if ip.split('.', 1)[0] not in {'172', '192', '127'}:
         data = {
             'message': f'IP {ip} is not allowed to access this resource.'
         }
