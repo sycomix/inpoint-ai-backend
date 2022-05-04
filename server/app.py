@@ -36,7 +36,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET"],
     allow_headers=["*"],
 )
 
@@ -70,7 +70,7 @@ async def get_analysis(q: List[int] = Query(...)):
     return {'workspaces': list(workspaces)}
 
 
-@app.get('/analyze', tags=['Root'])
+@app.post('/analyze', tags=['Root'])
 async def analyze():
     # Connect to the database.
     database = Neo4jDatabase(ai.config.uri, ai.config.username, ai.config.password)
