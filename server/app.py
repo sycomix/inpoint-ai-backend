@@ -1,5 +1,5 @@
 from typer import Argument
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi import Query
 from py2neo import Graph
 from fastapi import status
@@ -71,7 +71,15 @@ async def get_analysis(q: List[int] = Query(...)):
 
 
 @app.post('/analyze', tags=['Root'])
-async def analyze():
+async def analyze(request: Request):
+    # Allow only localhost calls.
+    ip = str(request.client.host)
+    if ip.split('.', 1)[0] not in {'172', '192', '127'}:
+        data = {
+            'message': f'IP {ip} is not allowed to access this resource.'
+        }
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=data)
+
     # Connect to the database.
     database = Neo4jDatabase(ai.config.uri, ai.config.username, ai.config.password)
     graph = Graph(ai.config.uri, auth = (ai.config.username, ai.config.password))
