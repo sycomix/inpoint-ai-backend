@@ -46,6 +46,7 @@ class ArgumentClassifier:
 
             if predicted != discussion['Position']:
                 res.append({
+                    'id': discussion['id'],
                     'suggested_argument_type': predicted,
                     'text': discussion['DiscussionText'],
                 })
