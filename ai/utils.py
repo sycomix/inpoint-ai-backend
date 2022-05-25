@@ -8,6 +8,7 @@ import functools
 import requests
 from bs4 import BeautifulSoup
 from decouple import config
+import numpy
 
 import ai.config
 

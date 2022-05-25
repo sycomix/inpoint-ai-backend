@@ -28,6 +28,7 @@ from ai.create import (
 )
 
 from ai.classification import ArgumentClassifier
+from ai.clustering import ArgumentClusterer
 
 
 app = FastAPI(docs_url='/docs', redoc_url=None)
@@ -96,6 +97,7 @@ async def analyze(request: Request):
 
     # Train the argument classifier from all texts.
     ArgumentClassifier.train_classifiers(discussions, lang_det)
+    ArgumentClusterer.fit_clusterers(discussions, lang_det)
 
     # Each workspace will hold a list of results.
     results = []
@@ -112,6 +114,7 @@ async def analyze(request: Request):
 
         # Suggest new argument types for each discussion in the current workspace.
         wsp_suggestions = ArgumentClassifier.suggest_labels(wsp_discussions, lang_det)
+        wsp_clusters = ArgumentClusterer.suggest_clusters(wsp_discussions, lang_det)
 
         # Create node groups from the discussions object.
         node_groups = \
@@ -148,7 +151,7 @@ async def analyze(request: Request):
         # Each workspace is a dict object, which contains
         # its id, text summaries grouped by node (argument)
         # type, an aggregated summary and a list of keyphrases.
-        results.append({'_id': wsp['id'], **aggregated, **node_groups, **wsp_suggestions})
+        results.append({'_id': wsp['id'], **aggregated, **node_groups, **wsp_suggestions, **wsp_clusters})
 
     # Connect to MongoDB, delete older summaries & keyphrases
     # from all workspaces and insert the newly created ones.
