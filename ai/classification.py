@@ -31,7 +31,7 @@ class ArgumentClassifier:
     # Suggest different argument types based on documents.
     @staticmethod
     @counter
-    def suggest_labels(discussions, lang_det):
+    def suggest_argument_types(discussions, lang_det):
         res = []
         for discussion in discussions:
             text = discussion['DiscussionText']

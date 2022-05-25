@@ -95,9 +95,8 @@ async def analyze(request: Request):
             'Failed to communicate properly with the ergologic endpoint!'
         )
 
-    # Train the argument classifier from all texts.
+    # Train the argument classifier from every text.
     ArgumentClassifier.train_classifiers(discussions, lang_det)
-    ArgumentClusterer.fit_clusterers(discussions, lang_det)
 
     # Each workspace will hold a list of results.
     results = []
@@ -112,9 +111,11 @@ async def analyze(request: Request):
             if discussion['SpaceId'] == wsp['id']
         ]
 
-        # Suggest new argument types for each discussion in the current workspace.
-        wsp_suggestions = ArgumentClassifier.suggest_labels(wsp_discussions, lang_det)
-        wsp_clusters = ArgumentClusterer.suggest_clusters(wsp_discussions, lang_det)
+        # Suggest new argument types for each argument of each discussion in the current workspace.
+        wsp_suggestions = ArgumentClassifier.suggest_argument_types(wsp_discussions, lang_det)
+
+        # Sort similar arguments into clusters, and return their medoid text and summary.
+        wsp_clusters = ArgumentClusterer.suggest_clusters(wsp_discussions, lang_det, en_nlp, el_nlp)
 
         # Create node groups from the discussions object.
         node_groups = \

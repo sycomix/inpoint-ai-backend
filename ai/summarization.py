@@ -54,7 +54,7 @@ def text_summarization(doc, nlp, top_n = 15, top_sent = 5):
     """
 
     # Access the textrank component to perform summarization.
-    summary = '\n'.join(sent.text
+    summary = ' '.join(sent.text
         for sent in doc._.textrank.summary(
             limit_phrases = top_n, 
             limit_sentences = top_sent)
