@@ -6,7 +6,7 @@ debug = config('BACKEND_DEBUG', cast=bool)
 
 
 # Credentials for neo4j and mongodb.
-neo4j_user = 'neo4j'
+neo4j_user = config('NEO4J_INITDB_ROOT_USERNAME')
 neo4j_pwd = config('NEO4J_INITDB_ROOT_PASSWORD')
 bolt_port = config('NEO4J_BOLT_PORT', cast=int)
 neo4j_url = config('NEO4J_URL')
