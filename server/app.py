@@ -1,14 +1,14 @@
-from typer import Argument
+import datetime
 from fastapi import FastAPI, Request
 from fastapi import Query
 from py2neo import Graph
 from fastapi import status
-from decouple import config
 from pymongo import MongoClient
 from typing import List
 from server.models.responses import ErrorResponseModel
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 
 import ai.config
 import ai.utils
@@ -41,13 +41,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load models.
 en_nlp, el_nlp, lang_det = ai.utils.Models.load_models()
-
-MONGO_INITDB_ROOT_USERNAME = config('MONGO_INITDB_ROOT_USERNAME')
-MONGO_INITDB_ROOT_PASSWORD = config('MONGO_INITDB_ROOT_PASSWORD')
-MONGO_URL = config('MONGO_URL')
-MONGO_LOCALHOST_PORT = config('MONGO_LOCALHOST_PORT')
-MONGO_CONNECTION_STRING = f'mongodb://{MONGO_INITDB_ROOT_USERNAME}:{MONGO_INITDB_ROOT_PASSWORD}@{MONGO_URL}:{MONGO_LOCALHOST_PORT}'
 
 
 @app.get('/', tags=['Root'])
@@ -58,7 +53,7 @@ async def read_root():
 @app.get('/get-analysis', tags=['Root'])
 async def get_analysis(q: List[int] = Query(...)):
     workspace_ids = q
-    client = MongoClient(MONGO_CONNECTION_STRING)
+    client = MongoClient(ai.config.mongo_connection_string)
     mongo_database = client['inpoint']
     workspaces_collection = mongo_database['workspaces']
     workspaces = workspaces_collection.find({'_id': {'$in': workspace_ids}})
@@ -70,9 +65,24 @@ async def get_analysis(q: List[int] = Query(...)):
 
     return {'workspaces': list(workspaces)}
 
-
+# Analyze can only run once per hour.
 @app.post('/analyze', tags=['Root'])
 async def analyze(request: Request):
+    # Connect to the mongodb database.
+    client = MongoClient(ai.config.mongo_connection_string)
+    mongo_database = client['inpoint']
+    throttles_collection = mongo_database['throttles']
+    res = throttles_collection.find_one()
+    now = datetime.datetime.now()
+    if res is not None:
+        elapsed = now - res['date']
+        if elapsed < datetime.timedelta(minutes=60):
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={
+                'message': 'Analyze has recently run. Please try again later!'
+                })
+    throttles_collection.remove({})
+    throttles_collection.insert_one({'date': now})
+
     # Allow only localhost calls.
     ip = str(request.client.host)
     if ip.split('.', 1)[0] not in {'172', '192', '127'}:
@@ -81,9 +91,9 @@ async def analyze(request: Request):
         }
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content=data)
 
-    # Connect to the database.
-    database = Neo4jDatabase(ai.config.uri, ai.config.username, ai.config.password)
-    graph = Graph(ai.config.uri, auth = (ai.config.username, ai.config.password))
+    # Connect to the neo4j database.
+    database = Neo4jDatabase(ai.config.neo4j_connection_string, ai.config.neo4j_user, ai.config.neo4j_pwd)
+    graph = Graph(ai.config.neo4j_connection_string, auth = (ai.config.neo4j_user, ai.config.neo4j_pwd))
 
     # Retrieve data from the Ergologic backend.
     # data json format: {'workspaces': [], 'discussions': []}
@@ -153,10 +163,8 @@ async def analyze(request: Request):
         # type, an aggregated summary and a list of keyphrases.
         results.append({'_id': wsp['id'], **aggregated, **node_groups, **wsp_suggestions, **wsp_clusters})
 
-    # Connect to MongoDB, delete older summaries & keyphrases
+    # Delete older summaries & keyphrases
     # from all workspaces and insert the newly created ones.
-    client = MongoClient(MONGO_CONNECTION_STRING)
-    mongo_database = client['inpoint']
     workspaces_collection = mongo_database['workspaces']
     workspaces_collection.remove({})
     workspaces_collection.insert_many(results)

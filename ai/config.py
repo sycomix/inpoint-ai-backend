@@ -5,12 +5,18 @@ from decouple import config
 debug = config('BACKEND_DEBUG', cast=bool)
 
 
-# Connection data
-BOLT_PORT = config('NEO4J_BOLT_PORT', cast=int)
-NEO4J_URL = config('NEO4J_URL')
-uri = f'bolt://{NEO4J_URL}:{BOLT_PORT}'
-username = 'neo4j'
-password = config('NEO4J_INITDB_ROOT_PASSWORD')
+# Credentials for neo4j and mongodb.
+neo4j_user = 'neo4j'
+neo4j_pwd = config('NEO4J_INITDB_ROOT_PASSWORD')
+bolt_port = config('NEO4J_BOLT_PORT', cast=int)
+neo4j_url = config('NEO4J_URL')
+neo4j_connection_string = f'bolt://{neo4j_url}:{bolt_port}'
+
+mongo_user = config('MONGO_INITDB_ROOT_USERNAME')
+mongo_pwd = config('MONGO_INITDB_ROOT_PASSWORD')
+mongo_port = config('MONGO_LOCALHOST_PORT')
+mongo_url = config('MONGO_URL')
+mongo_connection_string = f'mongodb://{mongo_user}:{mongo_pwd}@{mongo_url}:{mongo_port}'
 
 
 # Supported data types
