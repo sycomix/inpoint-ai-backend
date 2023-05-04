@@ -1,14 +1,23 @@
+import logging
 from decouple import config
 
 
 # Initial Setup
-debug = config('BACKEND_DEBUG', cast=bool)
+debug = config('BACKEND_DEBUG', cast = bool)
+
+
+# Basic config logger of the backend.
+logging.basicConfig(
+    filename = 'inpoint_backend.logs', encoding = 'utf-8', 
+    filemode = 'a', datefmt = '%H:%M:%S', level = logging.INFO, force = True,
+    format = '%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+)
 
 
 # Credentials for neo4j and mongodb.
 neo4j_user = config('NEO4J_INITDB_ROOT_USERNAME')
 neo4j_pwd = config('NEO4J_INITDB_ROOT_PASSWORD')
-bolt_port = config('NEO4J_BOLT_PORT', cast=int)
+bolt_port = config('NEO4J_BOLT_PORT', cast = int)
 neo4j_url = config('NEO4J_URL')
 neo4j_connection_string = f'bolt://{neo4j_url}:{bolt_port}'
 

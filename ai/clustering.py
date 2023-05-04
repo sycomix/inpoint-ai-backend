@@ -2,7 +2,6 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn_extra.cluster import KMedoids
 from ai.utils import (
-    counter,
     detect_language,
     remove_punctuation_and_whitespace
 )
@@ -10,32 +9,31 @@ from ai.summarization import (
     run_textrank, text_summarization
 )
 from ai import config
-
 from yellowbrick.cluster import KElbowVisualizer
 from yellowbrick.cluster import SilhouetteVisualizer
 from yellowbrick.text import TSNEVisualizer
 from matplotlib import pyplot as plt
 
-class ArgumentClusterer:
-    english_clusterer = None
-    greek_clusterer = None
 
-    def __init__(self, n_components=2):
-        #self.__pca = PCA(n_components=n_components, random_state=0)
+class ArgumentClusterer:
+    english_clusterer, greek_clusterer = None, None
+
+    def __init__(self, n_components = 2):
+        #self.__pca = PCA(n_components = n_components, random_state = 0)
         self.__clusterer = None
         self.__medoid_texts = None
 
-    def fit(self, x, output_filename_suffix='output.pdf'):
+    def fit(self, x, output_filename_suffix = 'output.pdf'):
         x = np.array(x)
         num_samples, num_features = x.shape[0], x.shape[1]
         self.__pca = PCA(n_components = min(num_samples, num_features), random_state=0)
         x_transformed = self.__pca.fit_transform(x)
 
-        visualizer = KElbowVisualizer(KMedoids(random_state=0), k=(1, num_samples), timings=False, locate_elbow=True)
+        visualizer = KElbowVisualizer(KMedoids(random_state = 0), k = (1, num_samples), timings = False, locate_elbow = True)
         visualizer.fit(x_transformed)
         best_n_clusters = visualizer.elbow_value_ if visualizer.elbow_value_ is not None else 1
 
-        self.__clusterer = KMedoids(n_clusters=best_n_clusters, random_state=0)
+        self.__clusterer = KMedoids(n_clusters = best_n_clusters, random_state = 0)
         self.__clusterer.fit(x_transformed)
 
     def predict(self, x):
@@ -47,10 +45,9 @@ class ArgumentClusterer:
 
     # Sort different arguments into similar clusters.
     @staticmethod
-    @counter
     def suggest_clusters(discussions, lang_det, en_nlp, el_nlp):
 
-        # The workspace doesn't have enough discussions, early exit.
+        # If the workspace does not have enough discussions, early exit.
         if len(discussions) < 3:
             return {
                 'greek_clusters': {},
@@ -108,12 +105,10 @@ class ArgumentClusterer:
         }
 
     @staticmethod
-    @counter
     def fit_clusterers(discussions, lang_det, en_nlp, el_nlp):
-        english_clusterer = None
-        greek_clusterer = None
-
+        english_clusterer, greek_clusterer = None, None
         english_texts, greek_texts = [], []
+        
         for discussion in discussions:
             if discussion['Position'] in ['Issue']:
                 continue

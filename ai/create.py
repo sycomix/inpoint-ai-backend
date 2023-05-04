@@ -1,10 +1,7 @@
-import json
-from bs4 import BeautifulSoup
 from py2neo.bulk import create_nodes, merge_relationships
 from ai.similarity import calc_similarity_pairs
-from ai.utils import counter
 
-@counter
+
 def extract_node_groups(discussions, node_types, fields):
     """
     Function that extracts the node groups
@@ -25,7 +22,7 @@ def extract_node_groups(discussions, node_types, fields):
         })      
     return node_groups
 
-@counter
+
 def create_discussion_nodes(database, node_groups, fields):
     """
     Function that creates each node in the database.
@@ -40,7 +37,7 @@ def create_discussion_nodes(database, node_groups, fields):
             create_nodes(database.auto(), nodes, labels = {'Node', label})
     return
 
-@counter
+
 def create_similarity_graph(database, node_groups, node_types, fields, 
                             en_nlp, el_nlp, lang_det, cutoff):
     """

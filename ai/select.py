@@ -1,6 +1,4 @@
-from ai.utils import(
-    detect_language, counter, remove_stopwords_from_keyphrases
-)
+from ai.utils import detect_language
 from ai.summarization import (
     run_textrank, keyword_extraction, text_summarization
 )
@@ -24,7 +22,6 @@ def extract_id_texts_from_communities(database):
     } if id_texts else {}
 
 
-@counter
 def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
     """
     Function that performs text summarization on all communities,

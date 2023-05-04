@@ -2,7 +2,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from typer import Argument
 from ai.utils import (
-    counter,
     detect_language,
     remove_punctuation_and_whitespace
 )
@@ -30,7 +29,6 @@ class ArgumentClassifier:
 
     # Suggest different argument types based on documents.
     @staticmethod
-    @counter
     def suggest_argument_types(discussions, lang_det):
         res = []
         for discussion in discussions:
@@ -55,7 +53,6 @@ class ArgumentClassifier:
         }
 
     @staticmethod
-    @counter
     def train_classifiers(discussions, lang_det):
         english_classifier = ArgumentClassifier()
         greek_classifier = ArgumentClassifier()

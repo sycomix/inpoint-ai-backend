@@ -4,16 +4,18 @@ import html
 import string
 import spacy
 import fasttext
+import logging
+import datetime
 import functools
 import requests
 from bs4 import BeautifulSoup
 from decouple import config
-import numpy
-
 import ai.config
+
 
 ERGOLOGIC_WORKSPACES_URL = config('ERGOLOGIC_WORKSPACES_URL')
 ERGOLOGIC_DISCUSSIONS_URL = config('ERGOLOGIC_DISCUSSIONS_URL')
+
 
 class Models:
     __en_nlp = None
@@ -27,6 +29,7 @@ class Models:
         NLP models, as well as the language detection model.
         This needs to run once since all models need a few seconds to load.
         """
+        logging.info('Loading pre-trained ML models...')
         if cls.__en_nlp is None:
             cls.__en_nlp = spacy.load('en_core_web_lg')
             cls.__el_nlp = spacy.load('el_core_news_lg')
@@ -59,7 +62,7 @@ def remove_greek_accents(text):
     Function which replaces all greek accented characters
     with non-accented ones.
     """
-    gr_accents = {'ά': 'α', 'ό': 'ο', 'ύ': 'υ', 'ί': 'ι', 'έ': 'ε', 'ϊ': 'ι'}
+    gr_accents = {'ά': 'α', 'ό': 'ο', 'ύ': 'υ', 'ί': 'ι', 'έ': 'ε', 'ϊ': 'ι', 'ή': 'η'}
     return ''.join(c if c not in gr_accents else gr_accents[c] for c in text)
 
 
@@ -141,17 +144,21 @@ def remove_stopwords_from_keyphrases(keyphrases, nlp, language, only_prefixes = 
 
 def counter(func):
     """
-    Print the elapsed system time in seconds, 
+    Log at info level the time at which the process started 
+    and its elapsed system time in seconds, 
     if only the debug flag is set to True.
     """
     if not ai.config.debug:
         return func
     @functools.wraps(func)
     def wrapper_counter(*args, **kwargs):
-        start_time = time.perf_counter()
+        started_time = datetime.datetime.now()
+        beginning_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
-        print(f'{func.__name__}: {end_time - start_time} secs')
+        time_delta = end_time - beginning_time
+        info_msg = f'{func.__name__}: started on {started_time} (duration: {time_delta} secs)'
+        logging.info(info_msg)
         return result
     return wrapper_counter
 
@@ -160,14 +167,27 @@ def get_data_from_ergologic():
     """
     Function which GETs data from the Ergologic backend.
     """
+    got_responses = True
     workspaces_url = ERGOLOGIC_WORKSPACES_URL
     discussions_url = ERGOLOGIC_DISCUSSIONS_URL
 
-    try:
-        workspaces_json = requests.get(workspaces_url).json()
-        discussions_json = requests.get(discussions_url).json()
-    except Exception as e:
-        raise e
+    response = requests.get(workspaces_url)
+    if response.status_code == 200:
+        workspaces_json = response.json()
+    else:
+        got_responses = False
+        logging.error(f'The Ergologic backend workspaces url {workspaces_url} was not found!')
+
+    response = requests.get(discussions_url)
+    if response.status_code == 200:
+        discussions_json = response.json()
+    else:
+        got_responses = False
+        logging.error(f'The Ergologic backend discussions url {discussions_url} was not found!')
+
+    # If we did not receive all respones, early return.
+    if not got_responses:
+        return
 
     workspaces = [
         {'id': wsp['id'],

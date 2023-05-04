@@ -33,3 +33,13 @@ services:
       - db
       - ai_db
     container_name: ${BACKEND_CONTAINER_NAME}
+  scheduler:
+    build: .
+    command: python scheduler.py
+    volumes:
+    - .:/app
+    depends_on:
+      - db
+      - ai_db
+      - backend
+    container_name: ${SCHEDULER_CONTAINER_NAME}
