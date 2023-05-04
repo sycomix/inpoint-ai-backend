@@ -19,12 +19,11 @@ from ai.create import (
 )
 from ai.classification import ArgumentClassifier
 from ai.clustering import ArgumentClusterer
-from py2neo import Graph
 from pymongo import MongoClient
 
 
 @counter
-def MLPipeline(en_nlp, el_nlp, lang_det):
+def MLPipeline(en_nlp, el_nlp, lang_det, first_run = False):
 
     # Connect to the mongodb database.
     client = MongoClient(ai.config.mongo_connection_string)
@@ -35,8 +34,9 @@ def MLPipeline(en_nlp, el_nlp, lang_det):
     res = throttles_collection.find_one()
     now = datetime.datetime.now()
 
-    # Check if there is an entry to the throttle table and early return.
-    if res is not None:
+    # Check if it not the first run 
+    # and there is an entry to the throttle table to early return.
+    if not first_run and res is not None:
         elapsed = now - res['date']
         if elapsed < datetime.timedelta(minutes = 59):
             warning = 'MLPipeline Throttling: Please try again later!'
@@ -50,7 +50,6 @@ def MLPipeline(en_nlp, el_nlp, lang_det):
 
     # Connect to the neo4j database.
     database = Neo4jDatabase(ai.config.neo4j_connection_string, ai.config.neo4j_user, ai.config.neo4j_pwd)
-    graph = Graph(ai.config.neo4j_connection_string, auth = (ai.config.neo4j_user, ai.config.neo4j_pwd))
 
     # Retrieve data from the Ergologic backend.
     # data json format: {'workspaces': [], 'discussions': []}
@@ -91,12 +90,13 @@ def MLPipeline(en_nlp, el_nlp, lang_det):
             extract_node_groups(wsp_discussions, ai.config.node_types, ai.config.fields)
 
         # Create the discussion nodes in the Neo4j Database.
-        create_discussion_nodes(graph, node_groups, ai.config.fields)
+        create_discussion_nodes(database, node_groups)
 
         # Create the similarity graph.
-        create_similarity_graph(graph, node_groups, 
-                            ai.config.node_types, ai.config.fields, 
-                            en_nlp, el_nlp, lang_det, ai.config.cutoff)
+        create_similarity_graph(
+            database, node_groups, 
+            en_nlp, el_nlp, lang_det, ai.config.cutoff
+        )
 
         # Calculate the community score for the similarity graph.
         with GraphAlgos(database, ['Node'], ['is_similar']) as similarity_graph:
@@ -133,9 +133,9 @@ def MLPipeline(en_nlp, el_nlp, lang_det):
 
 
 # Log all possible exceptions from the ML Pipeline.
-def analyze(en_nlp, el_nlp, lang_det):
+def analyze(en_nlp, el_nlp, lang_det, first_run = False):
     try:
-        MLPipeline(en_nlp, el_nlp, lang_det)
+        MLPipeline(en_nlp, el_nlp, lang_det, first_run)
     except Exception as e:
         logging.exception(e)
     return

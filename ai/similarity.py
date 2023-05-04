@@ -1,5 +1,4 @@
 from itertools import product # Cartesian
-from spacy.language import Language
 from spacy.tokens import Doc
 from ai.utils import (
     detect_language, preprocess

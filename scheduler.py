@@ -13,7 +13,7 @@ en_nlp, el_nlp, lang_det = ai.utils.Models.load_models()
 # The wrapper function that runs analyze for the first time only.
 def run_first_time():
     logging.info('ML Pipeline: First Run.')
-    analyze(en_nlp, el_nlp, lang_det)
+    analyze(en_nlp, el_nlp, lang_det, first_run = True)
     return schedule.CancelJob
 
 
