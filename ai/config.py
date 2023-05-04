@@ -7,11 +7,17 @@ debug = config('BACKEND_DEBUG', cast = bool)
 
 
 # Basic config logger of the backend.
-logging.basicConfig(
-    filename = 'inpoint_backend.logs', encoding = 'utf-8', 
-    filemode = 'a', datefmt = '%H:%M:%S', level = logging.INFO, force = True,
-    format = '%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-)
+# logging.basicConfig(
+#     filename = 'inpoint_backend.logs', encoding = 'utf-8', 
+#     filemode = 'a', datefmt = '%H:%M:%S', level = logging.INFO, force = True,
+#     format = '%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
+# )
+
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+handler = logging.FileHandler('inpoint_backend.logs', 'a', 'utf-8') # or whatever
+handler.setFormatter(logging.Formatter('%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s'))
+root_logger.addHandler(handler)
 
 
 # Credentials for neo4j and mongodb.
