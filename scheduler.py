@@ -25,8 +25,10 @@ def work():
 def scheduler(schedule_interval_secs = 60*60):
 
     # Run the analyze() for the first time and measure its processing time.
+    # Add a stalling amount of time, so Neo4j has time to start.
     start = default_timer()
-    schedule.every(1).seconds.do(run_first_time)
+    time.sleep(30)
+    schedule.every(0).seconds.do(run_first_time)
     schedule.run_all()
     end = default_timer()
     

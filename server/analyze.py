@@ -29,7 +29,7 @@ def MLPipeline(en_nlp, el_nlp, lang_det, first_run = False):
     client = MongoClient(ai.config.mongo_connection_string)
     mongo_database = client['inpoint']
     
-    # Throttle the use of the MLPipeline to once per hour.
+    # Throttle the use of the MLPipeline.
     throttles_collection = mongo_database['throttles']
     res = throttles_collection.find_one()
     now = datetime.datetime.now()
@@ -38,7 +38,7 @@ def MLPipeline(en_nlp, el_nlp, lang_det, first_run = False):
     # and there is an entry to the throttle table to early return.
     if not first_run and res is not None:
         elapsed = now - res['date']
-        if elapsed < datetime.timedelta(minutes = 59):
+        if elapsed < datetime.timedelta(minutes = 45):
             warning = 'MLPipeline Throttling: Please try again later!'
             print(warning, file = sys.stderr)
             logging.warning(warning)
