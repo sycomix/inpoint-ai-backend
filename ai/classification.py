@@ -32,9 +32,14 @@ class ArgumentClassifier:
     def suggest_argument_types(discussions, lang_det):
         res = []
         for discussion in discussions:
+
+            if discussion['Position'] in ['Issue', 'Solution']:
+                continue
+
             text = discussion['DiscussionText']
             language = detect_language(lang_det, text)
             text = remove_punctuation_and_whitespace(text)
+
             if language == 'english':
                 predicted = ArgumentClassifier.english_classifier.predict([text])[0]
             elif language == 'greek':
@@ -60,8 +65,10 @@ class ArgumentClassifier:
         english_texts, english_labels = [], []
         greek_texts, greek_labels = [], []
         for discussion in discussions:
+
             if discussion['Position'] in ['Issue', 'Solution']:
                 continue
+
             text = discussion['DiscussionText']
             language = detect_language(lang_det, text)
             text = remove_punctuation_and_whitespace(text)

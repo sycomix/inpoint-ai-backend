@@ -66,11 +66,14 @@ class ArgumentClusterer:
         } if ArgumentClusterer.greek_clusterer is not None else {}
 
         for discussion in discussions:
+
             if discussion['Position'] in ['Issue', 'Solution']:
                 continue
+
             text = discussion['DiscussionText']
             language = detect_language(lang_det, text)
             text = remove_punctuation_and_whitespace(text)
+
             if language == 'english':
                 if ArgumentClusterer.english_clusterer is None:
                     continue
@@ -86,18 +89,20 @@ class ArgumentClusterer:
                 greek_clusters[predicted]['texts'].append(text)
                 greek_clusters[predicted]['medoid_text'] = ArgumentClusterer.greek_clusterer.__medoid_texts[predicted]
 
-            # Run textrank on non-empty aggregated text from each cluster for each language.
-            for en_cluster in english_clusters.keys():
-                en_text = '. '.join(english_clusters[en_cluster]['texts'])
-                if en_text != '':
-                    en_doc = run_textrank(en_text, en_nlp)
-                    english_clusters[en_cluster]['summary'] = text_summarization(en_doc, en_nlp, config.top_n, config.top_sent)
-        
-            for el_cluster in greek_clusters.keys():
-                el_text = '. '.join(greek_clusters[el_cluster]['texts'])
-                if el_text != '':
-                    el_doc = run_textrank(el_text, el_nlp)
-                    greek_clusters[el_cluster]['summary'] = text_summarization(el_doc, el_nlp, config.top_n, config.top_sent)
+        # Run textrank on non-empty aggregated text from each cluster for each language.
+        for en_cluster in english_clusters.keys():
+            en_text = '. '.join(english_clusters[en_cluster]['texts'])
+            if en_text != '':
+                en_doc = run_textrank(en_text, en_nlp)
+                english_clusters[en_cluster]['summary'] = text_summarization(en_doc, en_nlp, config.top_n, config.top_sent)
+            del english_clusters[en_cluster]['texts']
+
+        for el_cluster in greek_clusters.keys():
+            el_text = '. '.join(greek_clusters[el_cluster]['texts'])
+            if el_text != '':
+                el_doc = run_textrank(el_text, el_nlp)
+                greek_clusters[el_cluster]['summary'] = text_summarization(el_doc, el_nlp, config.top_n, config.top_sent)
+            del greek_clusters[el_cluster]['texts']
 
         return {
             'greek_clusters': greek_clusters,
@@ -108,9 +113,9 @@ class ArgumentClusterer:
     def fit_clusterers(discussions, lang_det, en_nlp, el_nlp):
         english_clusterer, greek_clusterer = None, None
         english_texts, greek_texts = [], []
-        
+
         for discussion in discussions:
-            if discussion['Position'] in ['Issue']:
+            if discussion['Position'] in ['Issue', 'Solution']:
                 continue
             text = discussion['DiscussionText']
             language = detect_language(lang_det, text)
