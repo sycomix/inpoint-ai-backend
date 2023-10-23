@@ -29,10 +29,7 @@ def create_discussion_nodes(database, node_groups):
     # Create a unique constraint and merge all nodes of each node group.
     for label, nodes in node_groups.items():
         try:
-            query = (
-                f'CREATE CONSTRAINT ON (node:Node) '
-                'ASSERT node.id IS UNIQUE'
-            )
+            query = 'CREATE CONSTRAINT ON (node:Node) ASSERT node.id IS UNIQUE'
             database.execute(query, 'w')
         except:
             pass
@@ -42,7 +39,7 @@ def create_discussion_nodes(database, node_groups):
             for node in nodes:
                 item = ', '.join(f'{k}: {v if type(v) == int else single_quote+v+single_quote}' for k, v in node.items())
                 string_builder += f'{{{item}}}, '
-            list_of_dicts = string_builder[:-2] + ']'
+            list_of_dicts = f'{string_builder[:-2]}]'
 
             query = (
                 f'UNWIND {list_of_dicts} AS node '
@@ -69,24 +66,20 @@ def create_similarity_graph(database, node_groups,
         # Create the list of texts and ids for all nodes of a specific type.
         text_ids = [(node['id'], node['DiscussionText']) for node in nodes]
 
-        # We need at least two texts to make the comparison.
         if len(text_ids) < 2:
             continue
-        else:
-            edges = \
-                calc_similarity_pairs(text_ids, en_nlp, el_nlp, lang_det, cutoff)
+        edges = \
+            calc_similarity_pairs(text_ids, en_nlp, el_nlp, lang_det, cutoff)
 
-            # Convert the similarity score to a dict, for the call below.
-            edges = [[source, score, target] for source, score, target in edges]
-
-            # Merge all relationships, depending on source, target id, if they exist.
-            if edges:
-                query = (
-                    f'UNWIND {edges} as row '
-                    'MATCH (s:Node {id: row[0]}), (t:Node{id: row[2]}) '
-                    'MERGE (s)-[r:is_similar]-(t) '
-                    'SET r.score = row[1]'
-                )
-                database.execute(query, 'w')
+        if edges := [
+            [source, score, target] for source, score, target in edges
+        ]:
+            query = (
+                f'UNWIND {edges} as row '
+                'MATCH (s:Node {id: row[0]}), (t:Node{id: row[2]}) '
+                'MERGE (s)-[r:is_similar]-(t) '
+                'SET r.score = row[1]'
+            )
+            database.execute(query, 'w')
 
     return

@@ -72,8 +72,7 @@ async def update_discourse_add_discourse_item(discourse, discourse_data: dict):
     if updated_discourse:
         new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
         if new_discourse:
-            new_discourse_data = await discourse_from_database(new_discourse)
-            return new_discourse_data
+            return await discourse_from_database(new_discourse)
     return False
 
 
@@ -86,8 +85,7 @@ async def update_discourse_add_discourse_items_link(discourse, discourse_data: d
     if updated_discourse:
         new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
         if new_discourse:
-            new_discourse_data = await discourse_from_database(new_discourse)
-            return new_discourse_data
+            return await discourse_from_database(new_discourse)
     return False
 
 
@@ -105,8 +103,7 @@ async def update_discourse_delete_discourse_item(discourse, discourse_data: dict
         if updated_discourse:
             new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
             if new_discourse:
-                new_discourse_data = await discourse_from_database(new_discourse)
-                return new_discourse_data
+                return await discourse_from_database(new_discourse)
     return False
 
 
@@ -124,8 +121,7 @@ async def update_discourse_delete_discourse_items_link(discourse, discourse_data
         if updated_discourse:
             new_discourse = await discourses_collection.find_one({'_id': discourse['_id']})
             if new_discourse:
-                new_discourse_data = await discourse_from_database(new_discourse)
-                return new_discourse_data
+                return await discourse_from_database(new_discourse)
     return False
 
 
@@ -151,15 +147,16 @@ async def retrieve_discourses(client: str):
 
 
 async def retrieve_discourse_ids():
-    discourse_ids = [str(discourse['_id']) async for discourse in discourses_collection.find()]
-    return discourse_ids
+    return [
+        str(discourse['_id'])
+        async for discourse in discourses_collection.find()
+    ]
 
 
 async def retrieve_discourse(id: str, client: str):
     discourse = await discourses_collection.find_one({'_id': ObjectId(id)})
     if discourse:
-        discourse_data = await discourse_from_database(discourse, client)
-        return discourse_data
+        return await discourse_from_database(discourse, client)
 
 
 async def add_discourse(discourse_data, include_id: bool = False):
@@ -169,28 +166,35 @@ async def add_discourse(discourse_data, include_id: bool = False):
         discourse_data['_id'] = ObjectId(discourse_data['_id'])
     discourse = await discourses_collection.insert_one(discourse_data)
     new_discourse = await discourses_collection.find_one({'_id': discourse.inserted_id})
-    new_discourse_data = await discourse_from_database(new_discourse)
-    return new_discourse_data
+    return await discourse_from_database(new_discourse)
 
 
 async def update_discourse(id: str, action: str, update_type: str, discourse_data: dict):
-    if len(discourse_data) < 1:
+    if not discourse_data:
         return False
     discourse = await discourses_collection.find_one({'_id': ObjectId(id)})
     if not discourse:
         return False
     if action == 'add':
-        if update_type == 'discourseItem':
-            new_discourse_data = await update_discourse_add_discourse_item(discourse, discourse_data)
-        else:
-            new_discourse_data = await update_discourse_add_discourse_items_link(discourse, discourse_data)
-        return new_discourse_data
+        return (
+            await update_discourse_add_discourse_item(
+                discourse, discourse_data
+            )
+            if update_type == 'discourseItem'
+            else await update_discourse_add_discourse_items_link(
+                discourse, discourse_data
+            )
+        )
     if action == 'delete':
-        if update_type == 'discourseItem':
-            new_discourse_data = await update_discourse_delete_discourse_item(discourse, discourse_data)
-        else:
-            new_discourse_data = await update_discourse_delete_discourse_items_link(discourse, discourse_data)
-        return new_discourse_data
+        return (
+            await update_discourse_delete_discourse_item(
+                discourse, discourse_data
+            )
+            if update_type == 'discourseItem'
+            else await update_discourse_delete_discourse_items_link(
+                discourse, discourse_data
+            )
+        )
     return False
 
 
@@ -199,10 +203,9 @@ async def delete_discourse(id: str):
     if discourse:
         discourse_items_ids = list(discourse['discourseItems'])
         discourse_items_links_ids = list(discourse['discourseItemsLinks'])
-        if discourse_items_ids or discourse_items_links_ids:
-            if await discourse_delete_discourse_items_and_links(discourse):
-                return await discourses_collection.delete_one({'_id': ObjectId(id)})
-            return False
-        else:
+        if not discourse_items_ids and not discourse_items_links_ids:
             return await discourses_collection.delete_one({'_id': ObjectId(id)})
+        if await discourse_delete_discourse_items_and_links(discourse):
+            return await discourses_collection.delete_one({'_id': ObjectId(id)})
+        return False
     return False

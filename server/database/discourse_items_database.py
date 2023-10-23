@@ -56,8 +56,7 @@ async def add_discourse_item(discourse_item_data: dict, include_id: bool = False
     discourse_item_data = discourse_item_for_database(discourse_item_data, include_id)
     discourse_item = await discourse_items_collection.insert_one(discourse_item_data)
     new_discourse_item = await discourse_items_collection.find_one({'_id': discourse_item.inserted_id})
-    new_discourse_item_data = discourse_item_from_database(new_discourse_item)
-    return new_discourse_item_data
+    return discourse_item_from_database(new_discourse_item)
 
 
 async def retrieve_discourse_items():
@@ -71,12 +70,11 @@ async def retrieve_discourse_items():
 async def retrieve_discourse_item(id: str, client: str = 'frontend') -> dict:
     discourse_item = await discourse_items_collection.find_one({'_id': ObjectId(id)})
     if discourse_item:
-        discourse_item_data = discourse_item_from_database(discourse_item, client)
-        return discourse_item_data
+        return discourse_item_from_database(discourse_item, client)
 
 
 async def update_discourse_item(id: str, data: dict):
-    if len(data) < 1:
+    if not data:
         return False
     discourse_item = discourse_items_collection.find_one({'_id': ObjectId(id)})
     if not discourse_item:
@@ -84,8 +82,7 @@ async def update_discourse_item(id: str, data: dict):
     updated_discourse_item = await discourse_items_collection.update_one({'_id': ObjectId(id)}, {'$set': data})
     if updated_discourse_item:
         updated_discourse_item = await discourse_items_collection.find_one({'_id': ObjectId(id)})
-        updated_discourse_item_data = discourse_item_from_database(updated_discourse_item)
-        return updated_discourse_item_data
+        return discourse_item_from_database(updated_discourse_item)
     return False
 
 

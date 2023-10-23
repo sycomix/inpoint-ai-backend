@@ -53,7 +53,7 @@ class ArgumentClusterer:
                 'greek_clusters': {},
                 'english_clusters': {}
             }
-        
+
         # Fit all clusterers for all discussions of a single workspace.
         ArgumentClusterer.fit_clusterers(discussions, lang_det, en_nlp, el_nlp)
         english_clusters = {
@@ -90,14 +90,14 @@ class ArgumentClusterer:
                 greek_clusters[predicted]['medoid_text'] = ArgumentClusterer.greek_clusterer.__medoid_texts[predicted]
 
         # Run textrank on non-empty aggregated text from each cluster for each language.
-        for en_cluster in english_clusters.keys():
+        for en_cluster in english_clusters:
             en_text = '. '.join(english_clusters[en_cluster]['texts'])
             if en_text != '':
                 en_doc = run_textrank(en_text, en_nlp)
                 english_clusters[en_cluster]['summary'] = text_summarization(en_doc, en_nlp, config.top_n, config.top_sent)
             del english_clusters[en_cluster]['texts']
 
-        for el_cluster in greek_clusters.keys():
+        for el_cluster in greek_clusters:
             el_text = '. '.join(greek_clusters[el_cluster]['texts'])
             if el_text != '':
                 el_doc = run_textrank(el_text, el_nlp)

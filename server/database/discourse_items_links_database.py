@@ -46,8 +46,7 @@ async def add_discourse_items_link(discourse_items_link_data: dict, include_id: 
     discourse_items_link = await discourse_items_links_collection.insert_one(discourse_items_link_data)
     new_discourse_items_link = await discourse_items_links_collection.find_one(
         {'_id': discourse_items_link.inserted_id})
-    new_discourse_items_link_data = discourse_items_link_from_database(new_discourse_items_link)
-    return new_discourse_items_link_data
+    return discourse_items_link_from_database(new_discourse_items_link)
 
 
 async def retrieve_discourse_items_links():
@@ -61,12 +60,11 @@ async def retrieve_discourse_items_links():
 async def retrieve_discourse_items_link(id: str, client: str = 'frontend') -> dict:
     discourse_items_link = await discourse_items_links_collection.find_one({'_id': ObjectId(id)})
     if discourse_items_link:
-        discourse_items_link_data = discourse_items_link_from_database(discourse_items_link, client)
-        return discourse_items_link_data
+        return discourse_items_link_from_database(discourse_items_link, client)
 
 
 async def update_discourse_items_link(id: str, data: dict):
-    if len(data) < 1:
+    if not data:
         return False
     discourse_items_link = discourse_items_links_collection.find_one({'_id': ObjectId(id)})
     if not discourse_items_link:
@@ -75,8 +73,7 @@ async def update_discourse_items_link(id: str, data: dict):
                                                                                      {'$set': data})
     if updated_discourse_items_link:
         updated_discourse_items_link = await discourse_items_links_collection.find_one({'_id': ObjectId(id)})
-        updated_discourse_items_link_data = discourse_items_link_from_database(updated_discourse_items_link)
-        return updated_discourse_items_link_data
+        return discourse_items_link_from_database(updated_discourse_items_link)
     return False
 
 

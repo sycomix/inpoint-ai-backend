@@ -53,11 +53,9 @@ def text_summarization(doc, nlp, top_n = 15, top_sent = 5):
     as a highly performant spacy pipeline component.
     """
 
-    # Access the textrank component to perform summarization.
-    summary = ' '.join(sent.text
+    return ' '.join(
+        sent.text
         for sent in doc._.textrank.summary(
-            limit_phrases = top_n, 
-            limit_sentences = top_sent)
+            limit_phrases=top_n, limit_sentences=top_sent
+        )
     )
-
-    return summary

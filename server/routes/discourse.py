@@ -84,10 +84,15 @@ async def update_discourse_data(id: str, action: Action, update_type: UpdateType
         if isinstance(data, UpdateDiscourseDeleteDiscourseItemOrLink):
             return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
                                                       'Expected UpdateDiscourseAddDiscourseItem with action=add!')
-    else:
-        if isinstance(data, UpdateDiscourseAddDiscourseItem) or isinstance(data, UpdateDiscourseAddDiscourseItemsLink):
-            return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
-                                                      'Expected UpdateDiscourseDeleteDiscourseItem with action=delete!')
+    elif isinstance(
+        data,
+        (
+            UpdateDiscourseAddDiscourseItem,
+            UpdateDiscourseAddDiscourseItemsLink,
+        ),
+    ):
+        return ErrorResponseModel.return_response('An error occurred', status.HTTP_403_FORBIDDEN,
+                                                  'Expected UpdateDiscourseDeleteDiscourseItem with action=delete!')
     discourse_data = jsonable_encoder(data)
     updated_discourse = await update_discourse(id, action, update_type, discourse_data)
     if updated_discourse:

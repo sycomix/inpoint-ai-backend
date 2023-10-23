@@ -48,23 +48,23 @@ async def retrieve_user(username: str) -> dict:
 
 
 async def update_user(username: str, data: dict):
-    if len(data) < 1:
+    if not data:
         return False
-    if 'hashed_password' in data.keys():
+    if 'hashed_password' in data:
         return False
     user = await user_collection.find_one({'username': username})
     if not user:
         return False
     updated_user = await user_collection.update_one({'username': username}, {'$set': data})
     if updated_user:
-        if 'username' in data.keys():
+        if 'username' in data:
             updated_user = await user_collection.find_one({'username': data['username']})
         else:
             updated_user = await user_collection.find_one({'username': username})
-        if updated_user:
-            updated_user_data = user_helper(updated_user)
-            updated_user_data.pop('hashed_password')
-            return updated_user_data
+    if updated_user:
+        updated_user_data = user_helper(updated_user)
+        updated_user_data.pop('hashed_password')
+        return updated_user_data
     return False
 
 
@@ -77,7 +77,7 @@ async def delete_user(username: str):
 
 
 async def change_password(username: str, hashed_password: str):
-    if len(hashed_password) < 1:
+    if not hashed_password:
         return False
     user = await user_collection.find_one({'username': username})
     if not user:
@@ -89,6 +89,4 @@ async def change_password(username: str, hashed_password: str):
         }
         }
     )
-    if updated_user:
-        return True
-    return False
+    return bool(updated_user)

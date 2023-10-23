@@ -16,10 +16,14 @@ def extract_id_texts_from_communities(database):
         'RETURN n.community, n.Position, COLLECT(DISTINCT n.id), COLLECT(DISTINCT n.DiscussionText)'
     )
     id_texts = database.execute(query, 'r')
-    return {
-        community: (position, ids, ' '.join(text for text in texts).replace('\n', ' '))
-        for community, position, ids, texts in id_texts
-    } if id_texts else {}
+    return (
+        {
+            community: (position, ids, ' '.join(texts).replace('\n', ' '))
+            for community, position, ids, texts in id_texts
+        }
+        if id_texts
+        else {}
+    )
 
 
 def summarize_communities(database, en_nlp, el_nlp, lang_det, top_n, top_sent):
@@ -75,15 +79,9 @@ def aggregate_summaries_keyphrases(workspace, lang_det, en_nlp, el_nlp, top_n, t
         'Aggregated': {'Summary': '', 'Keyphrases': []},
     }
 
-    # Aggregate all earlier produced summaries.
-    aggregated_summary = ' '.join(
-        summary for item in workspace.values()
-        for summary in item['Summaries']
-    ).replace('\n', ' ')
-
-    # If the aggregated summary is not empty, run textRank.
-    if aggregated_summary:
-
+    if aggregated_summary := ' '.join(
+        summary for item in workspace.values() for summary in item['Summaries']
+    ).replace('\n', ' '):
         # Detect the language of the aggregated summary.
         language = detect_language(lang_det, aggregated_summary)
 
